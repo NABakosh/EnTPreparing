@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ENT Preparing — платформа подготовки к ҰБТ / ЕНТ
 
-## Getting Started
+Образовательная платформа с адаптивным тестированием. **Без базы данных** — все данные хранятся в браузере (localStorage).
 
-First, run the development server:
+## Языки
+
+- **RU** — ЕНТ (Единое национальное тестирование)
+- **KK** — ҰБТ (Бірыңғай ұлттық тестілеу)
+
+Переключатель языка — в шапке сайта (RU / KK).
+
+## Как это работает
+
+| Данные | Где хранятся |
+|--------|--------------|
+| Аккаунт | localStorage браузера |
+| Прогресс и тесты | localStorage браузера |
+| Сертификаты PDF | Генерируются в браузере |
+| ИИ-тесты | API (без БД), fallback-вопросы без OpenAI |
+
+## Быстрый старт
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Переменные окружения (опционально)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Переменная | Описание |
+|------------|----------|
+| `AUTH_SECRET` | Секрет для JWT токенов тестов |
+| `OPENAI_API_KEY` | ИИ-генерация (без ключа — встроенные вопросы) |
 
-## Learn More
+**MongoDB не нужна.**
 
-To learn more about Next.js, take a look at the following resources:
+## Деплой на Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Запушьте на GitHub
+2. Импортируйте на [vercel.com](https://vercel.com)
+3. Добавьте `AUTH_SECRET` в Environment Variables
+4. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Страницы
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/` — главная
+- `/ent` — выбор курса (информатика / математика)
+- `/dashboard` — прогресс (локальный)
+- `/analytics` — статистика ҰБТ / ЕНТ
+- `/news` — новости (на выбранном языке)
+- `/login`, `/register` — локальная регистрация

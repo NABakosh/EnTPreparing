@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum Subject {
+  INFORMATICS
+  MATHEMATICS
+}
+
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  name          String?
+  passwordHash  String?
+  role          Role           @default(STUDENT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  testAttempts  TestAttempt[]
+  certificates  Certificate[]
+
+  @@map("users")
+}
+
+model Module {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  level        Int
+  subject      Subject
+  description  String?
+  testAttempts TestAttempt[]
+
+  @@unique([subject, level])
+  @@map("modules")
+}
+
+model TestAttempt {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String           @db.ObjectId
+  moduleId        String           @db.ObjectId
+  score           Float
+  totalQuestions  Int
+  isPassed        Boolean          @default(false)
+  completedAt     DateTime         @default(now())
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module          Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questionAnswers QuestionAnswer[]
+
+  @@index([userId, moduleId])
+  @@map("test_attempts")
+}
+
+model QuestionAnswer {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  attemptId    String      @db.ObjectId
+  questionText String
+  userAnswer   String?
+  correctAnswer String?
+  isCorrect    Boolean
+  topic        String
+  attempt      TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([topic])
+  @@map("question_answers")
+}
+
+model Certificate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  subject   Subject
+  issueDate DateTime @default(now())
+  fileUrl   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("certificates")
+}
