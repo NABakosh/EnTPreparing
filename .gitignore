@@ -45,3 +45,4 @@ resources/
 .env*
 !.env.example
 /exports/
+/logs/

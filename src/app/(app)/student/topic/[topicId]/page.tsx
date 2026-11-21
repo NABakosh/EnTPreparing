@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, ArrowRight, Lightbulb } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bot, Lightbulb } from "lucide-react";
+import { MentorChat } from "@/components/learn/mentor-chat";
 import { Markdown } from "@/components/learn/markdown";
 import { StartReviewButton, StartTestButton } from "@/components/learn/start-buttons";
 import { buttonVariants } from "@/components/ui/button";
@@ -53,7 +54,10 @@ export default async function TopicPage({ params }: PageProps<"/student/topic/[t
         </div>
       </section>
 
-      <div id="mentor-slot" />
+      <details className="group rounded-2xl border bg-card">
+        <summary className="flex cursor-pointer items-center gap-2 p-4 font-semibold sm:p-5"><Bot className="size-5 text-primary" aria-hidden />{t("mentor.widgetTitle")}</summary>
+        <div className="border-t p-4 sm:p-5"><MentorChat topicId={topic.id} compact /></div>
+      </details>
 
       <nav className="flex justify-between gap-2">
         {data.prevId ? <Link href={`/student/topic/${data.prevId}`} className={buttonVariants({ variant: "outline" })}><ArrowLeft aria-hidden />{t("student.prevTopic")}</Link> : <span />}
