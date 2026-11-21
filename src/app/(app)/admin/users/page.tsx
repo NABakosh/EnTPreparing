@@ -11,7 +11,7 @@ import { fmtDate } from "@/lib/format";
 import { requirePageUser } from "@/server/auth/current";
 import { listClasses } from "@/server/services/classes";
 import { listUsers } from "@/server/services/users";
-import { UserActions } from "./user-actions";
+import { UserActions } from "@/components/app/user-actions";
 
 export default async function AdminUsersPage({ searchParams }: PageProps<"/admin/users">) {
   const actor = await requirePageUser("ADMIN");
