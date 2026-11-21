@@ -1,0 +1,355 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum QuestionType {
+  SINGLE
+  MULTIPLE
+}
+
+enum QuestionStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+enum AttemptKind {
+  TOPIC
+  EXAM
+  REVIEW
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  FINISHED
+}
+
+enum NewsStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum SectionSlot {
+  FIXED
+  PROFILE_1
+  PROFILE_2
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  login              String    @unique
+  passwordHash       String
+  fullName           String
+  role               Role
+  subject            String? // предмет учителя (свободный текст)
+  classId            String? // класс ученика
+  class              Class?    @relation("ClassStudents", fields: [classId], references: [id], onDelete: SetNull)
+  teachingClasses    Class[]   @relation("ClassTeachers")
+  profilePairId      String?
+  profilePair        ProfilePair? @relation(fields: [profilePairId], references: [id], onDelete: SetNull)
+  mustChangePassword Boolean   @default(true)
+  active             Boolean   @default(true)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  children      ParentChild[]   @relation("ParentLinks")
+  parents       ParentChild[]   @relation("ChildLinks")
+  attempts      Attempt[]
+  topicProgress TopicProgress[]
+  certificates  Certificate[]
+  mentorLogs    MentorLog[]
+
+  @@index([role])
+  @@index([classId])
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String   @unique // например «11А»
+  grade     Int
+  students  User[]   @relation("ClassStudents")
+  teachers  User[]   @relation("ClassTeachers")
+  createdAt DateTime @default(now())
+}
+
+model ParentChild {
+  parentId String
+  childId  String
+  parent   User   @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  child    User   @relation("ChildLinks", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@id([parentId, childId])
+}
+
+model Subject {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  nameRu    String
+  nameKk    String
+  mandatory Boolean    @default(false) // обязательный предмет ҰБТ
+  order     Int        @default(0)
+  modules   Module[]
+  questions Question[]
+
+  pairsAsFirst  ProfilePair[]  @relation("PairFirst")
+  pairsAsSecond ProfilePair[]  @relation("PairSecond")
+  sections      ExamSection[]
+}
+
+model Module {
+  id        String  @id @default(cuid())
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  titleRu   String
+  titleKk   String
+  order     Int     @default(0)
+  topics    Topic[]
+
+  @@index([subjectId])
+}
+
+model Topic {
+  id          String  @id @default(cuid())
+  moduleId    String
+  module      Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  titleRu     String
+  titleKk     String
+  theoryRu    String  @default("")
+  theoryKk    String  @default("")
+  summaryRu   String  @default("")
+  summaryKk   String  @default("")
+  grade       Int?
+  sourceBook  String?
+  sourcePages String?
+  order       Int     @default(0)
+  needsReviewKk Boolean @default(false)
+
+  questions Question[]
+  progress  TopicProgress[]
+  attempts  Attempt[]
+
+  @@index([moduleId])
+}
+
+model Question {
+  id            String         @id @default(cuid())
+  topicId       String
+  topic         Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  textRu        String
+  textKk        String         @default("")
+  /// [{ "ru": string, "kk": string }]
+  options       Json
+  /// индексы верных вариантов: number[]
+  correct       Json
+  type          QuestionType   @default(SINGLE)
+  explanationRu String         @default("")
+  explanationKk String         @default("")
+  status        QuestionStatus @default(DRAFT)
+  source        String?
+  aiGenerated   Boolean        @default(false)
+  needsReviewKk Boolean        @default(false)
+  isDemo        Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  answers AttemptAnswer[]
+
+  @@index([topicId, status])
+  @@index([subjectId, status, type])
+}
+
+model ProfilePair {
+  id         String  @id @default(cuid())
+  subject1Id String
+  subject2Id String
+  subject1   Subject @relation("PairFirst", fields: [subject1Id], references: [id], onDelete: Cascade)
+  subject2   Subject @relation("PairSecond", fields: [subject2Id], references: [id], onDelete: Cascade)
+  active     Boolean @default(true)
+  order      Int     @default(0)
+
+  users        User[]
+  attempts     Attempt[]
+  certificates Certificate[]
+
+  @@unique([subject1Id, subject2Id])
+}
+
+model ExamTemplate {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  nameRu      String
+  nameKk      String
+  durationMin Int           @default(240)
+  active      Boolean       @default(true)
+  sections    ExamSection[]
+  attempts    Attempt[]
+}
+
+model ExamSection {
+  id             String       @id @default(cuid())
+  templateId     String
+  template       ExamTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  slot           SectionSlot
+  subjectId      String? // для FIXED
+  subject        Subject?     @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  singleCount    Int // заданий с одним ответом
+  multipleCount  Int          @default(0) // заданий с несколькими ответами
+  order          Int          @default(0)
+}
+
+model Attempt {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind          AttemptKind
+  status        AttemptStatus @default(IN_PROGRESS)
+  topicId       String?
+  topic         Topic?        @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  templateId    String?
+  template      ExamTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  profilePairId String?
+  profilePair   ProfilePair?  @relation(fields: [profilePairId], references: [id], onDelete: SetNull)
+  /// [{ "id": string, "section": string }] в порядке показа
+  items         Json
+  /// { [questionId]: number[] }
+  answers       Json          @default("{}")
+  /// { [sectionKey]: { score, max } }
+  sectionScores Json?
+  score         Float         @default(0)
+  maxScore      Float         @default(0)
+  correctCount  Int           @default(0)
+  total         Int           @default(0)
+  startedAt     DateTime      @default(now())
+  deadlineAt    DateTime?
+  finishedAt    DateTime?
+  durationSec   Int?
+
+  rows AttemptAnswer[]
+
+  @@index([userId, kind, status])
+}
+
+model AttemptAnswer {
+  id         String   @id @default(cuid())
+  attemptId  String
+  attempt    Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  topicId    String
+  subjectId  String
+  selected   Json
+  isCorrect  Boolean
+  points     Float
+  maxPoints  Float
+  createdAt  DateTime @default(now())
+
+  @@index([userId, isCorrect])
+  @@index([userId, topicId])
+  @@index([attemptId])
+}
+
+model TopicProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  theoryRead  Boolean  @default(false)
+  bestPercent Int      @default(0)
+  lastPercent Int      @default(0)
+  completed   Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, topicId])
+}
+
+model Certificate {
+  id            String       @id @default(cuid())
+  number        String       @unique
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  profilePairId String?
+  profilePair   ProfilePair? @relation(fields: [profilePairId], references: [id], onDelete: SetNull)
+  issuedAt      DateTime     @default(now())
+  revoked       Boolean      @default(false)
+}
+
+model News {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  titleRu     String
+  titleKk     String
+  excerptRu   String     @default("")
+  excerptKk   String     @default("")
+  bodyRu      String     @default("")
+  bodyKk      String     @default("")
+  coverUrl    String?
+  status      NewsStatus @default(DRAFT)
+  publishedAt DateTime   @default(now())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model BookChunk {
+  id       String  @id @default(cuid())
+  grade    Int
+  subject  String
+  book     String
+  part     Int?
+  chapter  String?
+  page     Int?
+  text     String
+  /// генерируемая колонка to_tsvector('russian', text), см. миграцию
+  tsv      Unsupported("tsvector")?
+
+  @@index([grade, subject])
+  @@index([tsv], type: Gin)
+}
+
+model MentorLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question  String
+  ok        Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
