@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     },
   },
   outputFileTracingIncludes: {
-    "/**": ["./src/server/assets/**"],
+    "/api/certificates/**": ["./src/server/assets/**"],
   },
 };
 
