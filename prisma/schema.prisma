@@ -140,6 +140,7 @@ model Topic {
   sourcePages String?
   order       Int     @default(0)
   needsReviewKk Boolean @default(false)
+  aiGenerated   Boolean @default(false) // тема и конспект созданы ИИ (scripts/build-curriculum.ts)
 
   questions Question[]
   progress  TopicProgress[]

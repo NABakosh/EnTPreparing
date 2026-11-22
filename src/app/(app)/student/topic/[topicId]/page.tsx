@@ -31,6 +31,12 @@ export default async function TopicPage({ params }: PageProps<"/student/topic/[t
       <h1 className="text-2xl leading-tight font-bold sm:text-3xl">{pickText(topic, "title", locale)}</h1>
       {(theory.fallback || summary.fallback || topic.needsReviewKk) && <p className="rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">{t("common.kkMissing")}</p>}
 
+      {topic.aiGenerated && (
+        <p className="flex gap-2 rounded-xl border border-primary/20 bg-secondary px-3 py-2 text-sm text-secondary-foreground">
+          <Bot className="mt-0.5 size-4 shrink-0" aria-hidden />
+          {topic.sourceBook?.includes("без учебника") ? t("student.aiTopicNoBook") : t("student.aiTopic")}
+        </p>
+      )}
       {summary.text && (
         <aside className="rounded-2xl border border-primary/20 bg-secondary p-4" aria-label={t("student.summary")}>
           <div className="mb-1 flex items-center gap-2 font-semibold text-secondary-foreground"><Lightbulb className="size-5" aria-hidden />{t("student.summary")}</div>
@@ -40,7 +46,7 @@ export default async function TopicPage({ params }: PageProps<"/student/topic/[t
 
       <section className="rounded-2xl border bg-card p-4 sm:p-6" aria-label={t("student.theory")}>
         {theory.text ? <Markdown>{theory.text}</Markdown> : <p className="text-muted-foreground">{t("student.noTheory")}</p>}
-        {(topic.sourceBook || topic.sourcePages) && <p className="mt-4 text-xs text-muted-foreground">{topic.sourceBook} {topic.sourcePages}</p>}
+        {topic.sourcePages && <p className="mt-4 text-xs text-muted-foreground">{t("student.sources")}: {topic.sourcePages}</p>}
       </section>
 
       <section className="space-y-3 rounded-2xl border bg-card p-4 sm:p-6">

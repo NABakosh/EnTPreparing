@@ -16,7 +16,8 @@
     "generate-questions": "tsx scripts/generate-questions.ts",
     "translate-kk": "tsx scripts/translate-kk.ts",
     "test": "vitest run",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "build-curriculum": "tsx scripts/build-curriculum.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

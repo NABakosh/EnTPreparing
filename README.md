@@ -52,6 +52,8 @@ npm run dev                   # http://localhost:3000
 npm run ingest-books -- --dir /путь/к/books [--replace] [--dry-run]
 npm run generate-questions -- --subject history-kz --count 5 [--topic <id>] [--lang ru|kk|both]
 npm run translate-kk -- --what all --limit 20
+npm run build-curriculum -- --subject all        # недостающие темы ҰБТ + конспекты по учебникам
+./scripts/run-full-generation.sh                 # всё сразу: темы, конспекты, вопросы по всем предметам
 ```
 
 - Сейчас книги загружаются из OCR-текстов: `npm run ingest-books -- --dir ~/Documents/bookcatalog/texts --replace`
