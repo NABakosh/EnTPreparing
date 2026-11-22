@@ -3,13 +3,13 @@ import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Toaster } from "@/components/ui/sonner";
-import { SITE_NAME } from "@/config/site";
+import { BRAND } from "@/config/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic", "cyrillic-ext"] });
 
 export const metadata: Metadata = {
-  title: { default: `${SITE_NAME.kk} / ${SITE_NAME.ru}`, template: `%s · ${SITE_NAME.kk}` },
+  title: { default: `${BRAND} — ҰБТ-ға дайындық / подготовка к ҰБТ`, template: `%s · ${BRAND}` },
   description: "ҰБТ-ға тегін дайындық платформасы / Бесплатная платформа подготовки к ҰБТ",
 };
 

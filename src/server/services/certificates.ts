@@ -7,7 +7,7 @@ import QRCode from "qrcode";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/errors";
 import type { CurrentUser } from "@/server/auth/current";
-import { SITE_NAME } from "@/config/site";
+import { BRAND } from "@/config/site";
 import { canViewStudent } from "./access";
 import { programCompletion } from "./learning";
 
@@ -70,7 +70,7 @@ export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
   const font = await pdf.embedFont(regular, { subset: true });
   const fontB = await pdf.embedFont(bold, { subset: true });
   pdf.setTitle(`Сертификат ${c.number}`);
-  pdf.setAuthor(`${SITE_NAME.kk} / ${SITE_NAME.ru}`);
+  pdf.setAuthor(BRAND);
 
   const W = 842;
   const H = 595;
@@ -88,7 +88,7 @@ export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
     const w = f.widthOfTextAtSize(text, size);
     page.drawText(text, { x: (W - w) / 2, y, size, font: f, color });
   };
-  center(`${SITE_NAME.kk} · ${SITE_NAME.ru}`, H - 62, 16, fontB, rgb(1, 1, 1));
+  center(`${BRAND} · ҰБТ-ға дайындық / Подготовка к ҰБТ`, H - 62, 16, fontB, rgb(1, 1, 1));
   center("СЕРТИФИКАТ", H - 150, 40, fontB, primary);
   center("Осы сертификат берілді / Настоящий сертификат выдан", H - 190, 13, font, muted);
   // ФИО — подбираем размер под ширину

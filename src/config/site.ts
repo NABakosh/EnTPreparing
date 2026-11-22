@@ -1,10 +1,14 @@
-/** Рабочее название сайта — меняется здесь в одном месте. */
+/** Название сайта — одно на обоих языках, меняется здесь в одном месте. */
+export const BRAND = "ENT Preparing";
 export const SITE_NAME = {
-  kk: "ҰБТ Дайындық",
-  ru: "Подготовка к ҰБТ",
+  kk: BRAND,
+  ru: BRAND,
 } as const;
 
-export const SITE_SHORT = "ҰБТ";
+export const SITE_SHORT = "ENT";
+
+/** Путь к картинке-логотипу в public/ (например "/logo.png"). null — текстовый логотип. */
+export const SITE_LOGO: string | null = null;
 
 export const LOCALES = ["kk", "ru"] as const;
 export type Locale = (typeof LOCALES)[number];

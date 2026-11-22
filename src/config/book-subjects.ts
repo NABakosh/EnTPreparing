@@ -9,6 +9,7 @@ export const BOOK_SUBJECTS: Record<string, string[]> = {
   informatics: ["информатика"],
   biology: ["биология"],
   chemistry: ["химия"],
+  english: ["английский язык"],
   // для математической грамотности опираемся на алгебру/геометрию
   "math-literacy": ["алгебра", "геометрия"],
   "reading-literacy": [],
