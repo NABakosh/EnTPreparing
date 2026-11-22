@@ -91,7 +91,10 @@ export async function askMentor(actor: CurrentUser, input: unknown, locale: Loca
     };
   } catch (e) {
     await prisma.mentorLog.create({ data: { userId: actor.id, question, ok: false } });
-    if (e instanceof AIError) throw new AppError(e.code === "ai_not_configured" ? "mentor_unavailable" : e.code === "ai_timeout" ? "mentor_timeout" : "mentor_failed", 503);
+    if (e instanceof AIError) {
+      const code = e.code === "ai_not_configured" ? "mentor_unavailable" : e.code === "ai_timeout" ? "mentor_timeout" : e.code === "ai_rate_limited" ? "mentor_busy" : "mentor_failed";
+      throw new AppError(code, 503);
+    }
     throw e;
   }
 }
