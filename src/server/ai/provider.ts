@@ -70,12 +70,15 @@ export function chat(messages: ChatMessage[], opts?: ChatOptions) {
 /** Повторные попытки с экспоненциальной задержкой (для скриптов). */
 export async function withRetry<T>(fn: () => Promise<T>, attempts = 3, baseMs = 2000): Promise<T> {
   let last: unknown;
-  for (let i = 0; i < attempts; i++) {
+  let limit = attempts;
+  for (let i = 0; i < limit; i++) {
     try {
       return await fn();
     } catch (e) {
       last = e;
       if (e instanceof AIError && e.code === "ai_not_configured") throw e;
+      // лимит запросов — не ошибка данных: даём до 6 попыток
+      if (e instanceof AIError && e.code === "ai_rate_limited") limit = Math.max(limit, 6);
       // при 429 ждём дольше: лимиты провайдера считаются поминутно
       const wait = e instanceof AIError && e.code === "ai_rate_limited" ? 15_000 * (i + 1) : baseMs * 2 ** i;
       await new Promise((r) => setTimeout(r, wait));

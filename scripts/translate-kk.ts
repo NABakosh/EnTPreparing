@@ -48,7 +48,13 @@ async function main() {
     }
   }
   if (what === "questions" || what === "all") {
-    const qs = await prisma.question.findMany({ where: { textKk: "" }, take: limit });
+    // вопросы, где не хватает любого казахского поля: текст, объяснение или хотя бы один вариант
+    const gapIds = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Question" q
+      WHERE q."textKk" = '' OR (q."explanationRu" <> '' AND q."explanationKk" = '')
+         OR EXISTS (SELECT 1 FROM jsonb_array_elements(q.options) o WHERE coalesce(o->>'kk', '') = '')
+      LIMIT ${limit}`;
+    const qs = await prisma.question.findMany({ where: { id: { in: gapIds.map((g) => g.id) } } });
     for (const q of qs) {
       try {
         const opts = q.options as { ru: string; kk: string }[];
@@ -59,7 +65,7 @@ async function main() {
           await prisma.question.update({
             where: { id: q.id },
             data: {
-              textKk: tr.text ?? "",
+              textKk: q.textKk || tr.text || "",
               explanationKk: q.explanationKk || tr.explanation || "",
               options: opts.map((o, i) => ({ ru: o.ru, kk: o.kk || tr[`o${i}`] || "" })),
               needsReviewKk: true,
@@ -69,6 +75,17 @@ async function main() {
         done++;
       } catch (e) {
         log(`вопрос ${q.id}: ОШИБКА ${(e as Error).message}`);
+      }
+    }
+  }
+  if (what === "all") {
+    for (const m of await prisma.module.findMany({ where: { titleKk: "" }, take: limit })) {
+      try {
+        const tr = await translate({ title: m.titleRu });
+        if (!a["dry-run"]) await prisma.module.update({ where: { id: m.id }, data: { titleKk: tr.title ?? "" } });
+        done++;
+      } catch (e) {
+        log(`модуль ${m.id}: ОШИБКА ${(e as Error).message}`);
       }
     }
   }
