@@ -27,10 +27,10 @@ describe("конвейер книг", () => {
   it("строит tsquery и находит по FTS с фильтрами", async () => {
     expect(buildTsQuery("что такое закон Ома?")).toBe("закон:* | ома:*");
     expect(buildTsQuery("?? и")).toBeNull();
-    await prisma.bookChunk.create({ data: { grade: 8, subject: "физика", book: BOOK, page: 10, text: "Закон Ома: сила тока прямо пропорциональна напряжению и обратно пропорциональна сопротивлению." } });
-    expect((await searchChunks("закон Ома", { subjects: ["физика"], maxGrade: 9 })).some((c) => c.book === BOOK)).toBe(true);
-    expect((await searchChunks("закон Ома", { subjects: ["физика"], maxGrade: 7 })).some((c) => c.book === BOOK)).toBe(false);
-    expect((await searchChunks("закон Ома", { subjects: ["химия"] })).some((c) => c.book === BOOK)).toBe(false);
+    await prisma.bookChunk.create({ data: { grade: 8, subject: "физика", book: BOOK, page: 10, text: "Квазитестовый закон Зюзякина: сила тока прямо пропорциональна напряжению." } });
+    expect((await searchChunks("Зюзякина квазитестовый", { subjects: ["физика"], maxGrade: 9 })).some((c) => c.book === BOOK)).toBe(true);
+    expect((await searchChunks("Зюзякина квазитестовый", { subjects: ["физика"], maxGrade: 7 })).some((c) => c.book === BOOK)).toBe(false);
+    expect((await searchChunks("Зюзякина квазитестовый", { subjects: ["химия"] })).some((c) => c.book === BOOK)).toBe(false);
   });
 });
 
