@@ -54,12 +54,14 @@ export default async function LandingPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[480px] bg-[radial-gradient(ellipse_at_top,var(--color-secondary),transparent_70%)]" />
+      <section className="relative overflow-hidden border-b">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-blue-50 to-background" />
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 sm:py-16 lg:grid-cols-[1.2fr_1fr]">
           <div>
             <Badge variant="secondary" className="h-7 rounded-full px-3 text-xs font-semibold">{t("heroBadge")}</Badge>
-            <h1 className="mt-4 text-4xl leading-[1.1] font-extrabold sm:text-5xl lg:text-6xl">{t("heroTitle")}</h1>
+            <h1 className="mt-4 text-4xl leading-[1.1] font-extrabold sm:text-5xl lg:text-6xl">
+              {t("heroTitleBefore")}<span className="text-primary">{t("heroTitleHighlight")}</span>{t("heroTitleAfter")}
+            </h1>
             <p className="mt-4 max-w-xl text-lg text-muted-foreground">{t("heroText")}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className={buttonVariants({ size: "lg" })}>{t("heroCta")}</Link>
@@ -74,7 +76,7 @@ export default async function LandingPage() {
       <Section id="features" title={t("featuresTitle")} muted>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map(({ k, Icon }) => (
-            <li key={k} className="rounded-2xl border bg-background p-5">
+            <li key={k} className="rounded-2xl border bg-background p-5 transition hover:border-primary hover:shadow-lg">
               <span className="grid size-11 place-items-center rounded-xl bg-secondary text-secondary-foreground"><Icon className="size-5" aria-hidden /></span>
               <h3 className="mt-4 text-lg font-semibold">{t(`features.${k}.title`)}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{t(`features.${k}.text`)}</p>
@@ -87,7 +89,7 @@ export default async function LandingPage() {
       <Section id="how" title={t("howTitle")}>
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map(({ k, Icon }, i) => (
-            <li key={k} className="relative rounded-2xl border bg-card p-5">
+            <li key={k} className="relative rounded-2xl border bg-card p-5 transition hover:border-primary hover:shadow-lg">
               <span className="text-sm font-bold text-primary">0{i + 1}</span>
               <Icon className="mt-3 size-7 text-primary" aria-hidden />
               <h3 className="mt-3 text-lg font-semibold">{t(`how.${k}.title`)}</h3>
@@ -101,7 +103,7 @@ export default async function LandingPage() {
       <Section id="subjects" title={t("subjectsTitle")} text={t("subjectsText")} muted>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {subjects.map((s) => (
-            <li key={s.id} className="flex items-center justify-between gap-3 rounded-2xl border bg-background p-4">
+            <li key={s.id} className="flex items-center justify-between gap-3 rounded-2xl border bg-background p-4 transition hover:border-primary hover:shadow-lg">
               <span className="font-semibold">{pickText(s, "name", locale)}</span>
               <Badge variant={s.mandatory ? "default" : "secondary"}>{s.mandatory ? t("mandatory") : t("profile")}</Badge>
             </li>

@@ -75,13 +75,13 @@ export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
   const W = 842;
   const H = 595;
   const page = pdf.addPage([W, H]);
-  const primary = rgb(0.31, 0.27, 0.9);
+  const primary = rgb(0.145, 0.388, 0.922); // #2563eb
   const ink = rgb(0.12, 0.13, 0.2);
   const muted = rgb(0.4, 0.42, 0.5);
 
   page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(1, 1, 1) });
   page.drawRectangle({ x: 20, y: 20, width: W - 40, height: H - 40, borderColor: primary, borderWidth: 3 });
-  page.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(0.85, 0.85, 0.97), borderWidth: 1 });
+  page.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(0.86, 0.91, 0.99), borderWidth: 1 });
   page.drawRectangle({ x: 20, y: H - 90, width: W - 40, height: 70, color: primary });
 
   const center = (text: string, y: number, size: number, f = font, color = ink) => {

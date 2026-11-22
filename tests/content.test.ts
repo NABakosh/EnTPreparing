@@ -46,8 +46,14 @@ describe("банк вопросов и проверка", () => {
 
   it("учитель правит и публикует черновик ИИ; тип выводится из числа верных", async () => {
     const q = await draft();
-    const queue = await reviewQueue(teacher, subjectId);
-    expect(queue.items.some((x) => x.id === q.id)).toBe(true);
+    // очередь постраничная (сначала старые) — ищем по всем страницам
+    let found = false;
+    for (let page = 1; page <= 50 && !found; page++) {
+      const queue = await reviewQueue(teacher, subjectId, page);
+      found = queue.items.some((x) => x.id === q.id);
+      if (!queue.items.length) break;
+    }
+    expect(found).toBe(true);
     await updateQuestion(teacher, q.id, valid("Исправлено"));
     const after = await prisma.question.findUniqueOrThrow({ where: { id: q.id } });
     expect(after.type).toBe("MULTIPLE");

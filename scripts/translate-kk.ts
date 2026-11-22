@@ -41,6 +41,7 @@ async function main() {
             data: { titleKk: t.titleKk || tr.title || "", theoryKk: t.theoryKk || tr.theory || "", summaryKk: t.summaryKk || tr.summary || "", needsReviewKk: true },
           });
         done++;
+        await new Promise((r) => setTimeout(r, 2000));
       } catch (e) {
         log(`тема ${t.id}: ОШИБКА ${(e as Error).message}`);
       }

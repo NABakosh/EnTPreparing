@@ -151,7 +151,10 @@
     "socialsTitle": "Мы в соцсетях",
     "footerText": "Бесплатная платформа подготовки к Единому национальному тестированию.",
     "contacts": "Контакты",
-    "rights": "© {year} {name}"
+    "rights": "© {year} {name}",
+    "heroTitleBefore": "Готовься к ",
+    "heroTitleHighlight": "ҰБТ",
+    "heroTitleAfter": " спокойно и по плану"
   },
   "auth": {
     "title": "Вход в кабинет",

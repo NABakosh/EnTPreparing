@@ -1,7 +1,7 @@
 /**
  * Генерация черновиков вопросов в формате ҰБТ по фрагментам учебников.
  *
- *   npm run generate-questions -- --subject history-kz [--topic <id>] [--count 5] [--lang ru|kk|both] [--grade 9] [--dry-run]
+ *   npm run generate-questions -- --subject history-kz [--topic <id>] [--count 5] [--lang ru|kk|both] [--grade 9] [--only-empty] [--delay 3000] [--dry-run]
  *
  * Для каждой темы ищет фрагменты (FTS по названию темы), просит модель создать вопросы
  * (4 варианта, 1 верный, объяснение, ссылка на источник) и сохраняет как DRAFT, aiGenerated=true.
@@ -34,7 +34,7 @@ async function main() {
   const subject = a.subject ? await prisma.subject.findUnique({ where: { slug: String(a.subject) } }) : null;
   if (!subject && !a.topic) throw new Error("Укажите --subject <slug> или --topic <id>");
   const topics = await prisma.topic.findMany({
-    where: a.topic ? { id: String(a.topic) } : { module: { subjectId: subject!.id } },
+    where: a.topic ? { id: String(a.topic) } : { module: { subjectId: subject!.id }, ...(a["only-empty"] ? { questions: { none: { aiGenerated: true } } } : {}) },
     include: { module: { include: { subject: true } } },
     orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
   });
@@ -42,7 +42,8 @@ async function main() {
   let created = 0;
   for (const t of topics) {
     const subjects = BOOK_SUBJECTS[t.module.subject.slug] ?? [];
-    const maxGrade = a.grade ? Number(a.grade) : (t.grade ?? null);
+    // учебники 8–11 классов: класс темы не ограничивает поиск, только явный --grade
+    const maxGrade = a.grade ? Number(a.grade) : null;
     const chunks = await searchChunks(`${t.titleRu} ${t.summaryRu}`, { subjects, maxGrade, limit: 6 });
     if (!chunks.length) {
       log(`[${t.titleRu}] фрагменты не найдены — пропуск`);
@@ -67,6 +68,12 @@ ${ctx}`;
         continue;
       }
       for (const v of valid) {
+        // перемешиваем варианты: модели часто ставят верный ответ первым
+        const order = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+        const opts = v.options_ru.map((ru, i) => ({ ru, kk: v.options_kk[i] ?? "" }));
+        v.options_ru = order.map((i) => opts[i].ru);
+        v.options_kk = order.map((i) => opts[i].kk);
+        v.correct = order.indexOf(v.correct);
         await prisma.question.create({
           data: {
             topicId: t.id,
@@ -89,6 +96,7 @@ ${ctx}`;
     } catch (e) {
       log(`[${t.titleRu}] ОШИБКА: ${(e as Error).message}`);
     }
+    await new Promise((r) => setTimeout(r, Number(a.delay ?? 3000))); // пауза между темами (лимиты API)
   }
   log(`Готово. Создано черновиков: ${created}. Проверьте их в /teacher/review.`);
 }

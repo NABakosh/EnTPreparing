@@ -151,7 +151,10 @@
     "socialsTitle": "Біз әлеуметтік желілерде",
     "footerText": "Ұлттық бірыңғай тестілеуге дайындалуға арналған тегін платформа.",
     "contacts": "Байланыс",
-    "rights": "© {year} {name}"
+    "rights": "© {year} {name}",
+    "heroTitleBefore": "",
+    "heroTitleHighlight": "ҰБТ-ға",
+    "heroTitleAfter": " асықпай әрі жоспармен дайындал"
   },
   "auth": {
     "title": "Кабинетке кіру",

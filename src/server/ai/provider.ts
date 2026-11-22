@@ -76,7 +76,9 @@ export async function withRetry<T>(fn: () => Promise<T>, attempts = 3, baseMs = 
     } catch (e) {
       last = e;
       if (e instanceof AIError && e.code === "ai_not_configured") throw e;
-      await new Promise((r) => setTimeout(r, baseMs * 2 ** i));
+      // при 429 ждём дольше: лимиты провайдера считаются поминутно
+      const wait = e instanceof AIError && e.code === "ai_rate_limited" ? 15_000 * (i + 1) : baseMs * 2 ** i;
+      await new Promise((r) => setTimeout(r, wait));
     }
   }
   throw last;

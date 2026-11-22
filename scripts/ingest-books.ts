@@ -7,7 +7,10 @@
  *   <dir>/<класс>_класс/<предмет>/часть_N/NNN.md   (NNN — номер страницы)
  * Класс берётся из сегмента пути вида «10_класс», «10 сынып», «grade10»; предмет — следующий сегмент;
  * часть — «часть_2»/«бөлім_2»/«part2»; страница — число в имени файла или маркер «<!-- page: 12 -->» / «## Стр. 12».
- * Книга = «<предмет> <класс> класс[, часть N]». Чанки 800–1200 символов с перекрытием ~150.
+ * Если в начале файла есть YAML-заголовок (класс, предмет, авторы, год, часть — формат OCR из bookcatalog),
+ * метаданные берутся из него, а страницы — из маркеров «<!-- стр. N -->».
+ * --skip «английский» (по умолчанию) — предметы, которые не загружаются (через запятую).
+ * Чанки 800–1200 символов с перекрытием ~150.
  */
 import "dotenv/config";
 import fs from "node:fs";
@@ -20,6 +23,31 @@ const MAX = 1200;
 const OVERLAP = 150;
 
 type Meta = { grade: number; subject: string; part: number | null; page: number | null; book: string };
+
+/** YAML-заголовок OCR-файла (--- класс: 9 / предмет: … / авторы: … ---). */
+export function parseFrontMatter(text: string): { meta: Record<string, string>; body: string } {
+  const m = text.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!m) return { meta: {}, body: text };
+  const meta: Record<string, string> = {};
+  for (const line of m[1].split("\n")) {
+    const i = line.indexOf(":");
+    if (i > 0) meta[line.slice(0, i).trim().toLowerCase()] = line.slice(i + 1).trim();
+  }
+  return { meta, body: text.slice(m[0].length) };
+}
+
+/** Метаданные из заголовка файла имеют приоритет над путём. */
+export function metaFromFrontMatter(fm: Record<string, string>, fallback: Meta | null): Meta | null {
+  const grade = Number(fm["класс"]) || fallback?.grade;
+  const subject = (fm["предмет"] || fallback?.subject || "").toLowerCase().replace(/_/g, " ");
+  if (!grade || !subject) return fallback;
+  const part = fm["часть"] ? Number(fm["часть"]) || null : (fallback?.part ?? null);
+  const author = (fm["авторы"] || "").split(",")[0].trim();
+  const year = fm["год"] || "";
+  const subjTitle = fm["предмет"] || subject;
+  const book = `${subjTitle}${author ? `, ${author}` : ""}, ${grade} класс${part ? `, часть ${part}` : ""}${year ? ` (${year})` : ""}`;
+  return { grade, subject, part, page: null, book };
+}
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -59,11 +87,16 @@ export function chunkText(text: string, defaultPage: number | null) {
     bufPage = page;
     bufChapter = chapter;
   };
-  const pieces = text.split(/\n{2,}/);
+  const normalized = text
+    .replace(/\r/g, "")
+    .replace(/(<!--[^>]*-->)/g, "\n\n$1\n\n")
+    .replace(/(\p{L})-\n(\p{Ll})/gu, "$1$2") // перенос слова
+    .replace(/([^\n])\n(?!\n)(?=[^#\n<])/g, "$1 "); // жёсткий перенос строки внутри абзаца
+  const pieces = normalized.split(/\n{2,}/);
   for (const raw of pieces) {
     const p = raw.trim();
     if (!p) continue;
-    const pm = p.match(/<!--\s*page:\s*(\d+)\s*-->|^#{0,6}\s*(?:стр\.?|бет|page)\s*(\d+)\s*$/i);
+    const pm = p.match(/^<!--\s*(?:page:|стр\.?|бет)\s*(\d+)\s*-->$|^#{0,6}\s*(?:стр\.?|бет|page)\s*(\d+)\s*$/i);
     if (pm) {
       page = Number(pm[1] ?? pm[2]);
       if (!buf) bufPage = page;
@@ -102,8 +135,11 @@ async function main() {
   log(`Найдено файлов: ${files.length}`);
   const byBook = new Map<string, { meta: Meta; files: string[] }>();
   let skipped = 0;
+  const skip = String(a.skip ?? "английский").toLowerCase().split(",").filter(Boolean);
   for (const f of files) {
-    const meta = metaFromPath(path.relative(dir, f));
+    const head = fs.readFileSync(f, "utf8").slice(0, 2000);
+    const meta = metaFromFrontMatter(parseFrontMatter(head).meta, metaFromPath(path.relative(dir, f)));
+    if (meta && skip.some((x) => meta.subject.includes(x))) continue;
     if (!meta) {
       skipped++;
       continue;
@@ -122,9 +158,12 @@ async function main() {
     }
     const rows: { grade: number; subject: string; book: string; part: number | null; chapter: string | null; page: number | null; text: string }[] = [];
     for (const f of bf) {
-      const meta = metaFromPath(path.relative(dir, f))!;
-      const text = fs.readFileSync(f, "utf8").replace(/\r/g, "");
-      for (const c of chunkText(text, meta.page)) rows.push({ grade: meta.grade, subject: meta.subject, book, part: meta.part, chapter: c.chapter, page: c.page, text: c.text });
+      const raw = fs.readFileSync(f, "utf8").replace(/\r/g, "");
+      const { meta: fm, body } = parseFrontMatter(raw);
+      const meta = metaFromFrontMatter(fm, metaFromPath(path.relative(dir, f)))!;
+      // номер страницы из имени файла берём только если в файле нет маркеров страниц
+      const defaultPage = Object.keys(fm).length ? null : meta.page;
+      for (const c of chunkText(body, defaultPage)) rows.push({ grade: meta.grade, subject: meta.subject, book, part: meta.part, chapter: c.chapter, page: c.page, text: c.text });
     }
     if (!a["dry-run"]) for (let i = 0; i < rows.length; i += 500) await prisma.bookChunk.createMany({ data: rows.slice(i, i + 500) });
     total += rows.length;

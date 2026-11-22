@@ -54,7 +54,9 @@ npm run generate-questions -- --subject history-kz --count 5 [--topic <id>] [--l
 npm run translate-kk -- --what all --limit 20
 ```
 
-- Структура книг: `<класс>_класс/<предмет>/часть_N/NNN.md` (NNN — страница); разбор гибкий, см. `scripts/ingest-books.ts`.
+- Сейчас книги загружаются из OCR-текстов: `npm run ingest-books -- --dir ~/Documents/bookcatalog/texts --replace`
+  (YAML-заголовок файла: класс, предмет, авторы, год, часть; страницы — маркеры `<!-- стр. N -->`). Английский язык пропускается (`--skip`).
+- Другая структура тоже поддерживается: `<класс>_класс/<предмет>/часть_N/NNN.md` (NNN — страница), см. `scripts/ingest-books.ts`.
 - Соответствие папок предметов и предметов платформы: `src/config/book-subjects.ts`.
 - Поиск — PostgreSQL FTS (`tsvector`, конфигурация `russian`) по таблице `BookChunk`; ментор отвечает только по найденным фрагментам и указывает источник.
 - Логи скриптов — в `logs/`.

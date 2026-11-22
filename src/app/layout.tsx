@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "ҰБТ-ға тегін дайындық платформасы / Бесплатная платформа подготовки к ҰБТ",
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#4f46e5" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#2563eb" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
