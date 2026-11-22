@@ -46,3 +46,4 @@ resources/
 !.env.example
 /exports/
 /logs/
+/screenshots/
