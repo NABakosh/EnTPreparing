@@ -1,7 +1,7 @@
 /**
  * Достраивает программу подготовки к ҰБТ: недостающие модули/темы по спецификации + конспекты из учебников (RAG).
  *
- *   npm run build-curriculum -- --subject history-kz|all [--max-topics 24] [--theory-only] [--dry-run] [--delay 2000]
+ *   npm run build-curriculum -- --subject history-kz|all [--max-topics 24] [--theory-only] [--refresh-nobook] [--dry-run] [--delay 2000]
  *
  * 1. Модель предлагает структуру предмета по спецификации ҰБТ (модули → темы), уже существующие темы не дублируются.
  * 2. Для новых тем и тем без теории пишется конспект (ru + kk) по найденным фрагментам учебников.
@@ -77,9 +77,13 @@ ${SUBJECT_HINT[subject.slug] ?? ""}
 Уже есть темы (не повторяй их, но можешь включить их модули): ${existing.join("; ") || "нет"}.
 Названия на русском и казахском, в терминологии казахстанских школьных учебников (например «соударения», а не «коллизии»). grade — класс, где тема изучается (5–11).
 Ответ JSON: {"modules":[{"titleRu":"","titleKk":"","topics":[{"titleRu":"","titleKk":"","grade":9}]}]}`;
-  const raw = await withRetry(() => chat([{ role: "system", content: "Ты методист, эксперт по ҰБТ и школьной программе Казахстана. Отвечай только JSON." }, { role: "user", content: prompt }], { json: true, temperature: 0.3, maxTokens: 5000, timeoutMs: 120_000 }));
-  const parsed = structSchema.safeParse(parseJsonLoose(raw));
-  if (!parsed.success) throw new Error("структура: неверный JSON");
+  // разбор JSON внутри повтора: при битом ответе запрос повторяется
+  const parsed = await withRetry(async () => {
+    const raw = await chat([{ role: "system", content: "Ты методист, эксперт по ҰБТ и школьной программе Казахстана. Отвечай только JSON." }, { role: "user", content: prompt }], { json: true, temperature: 0.3, maxTokens: 5000, timeoutMs: 120_000 });
+    const r = structSchema.safeParse(parseJsonLoose(raw));
+    if (!r.success) throw new Error("структура: неверный JSON");
+    return r;
+  });
   let created = 0;
   let order = subject.modules.length;
   for (const m of parsed.data.modules) {
@@ -114,9 +118,12 @@ async function writeTheory(topicId: string, log: (...x: unknown[]) => void) {
 summary — 1–2 предложения. Дай версии на русском (*_ru) и казахском (*_kk, кириллица).
 ${base}
 Ответ JSON: {"theory_ru":"","theory_kk":"","summary_ru":"","summary_kk":""}`;
-  const raw = await withRetry(() => chat([{ role: "system", content: "Ты опытный учитель, готовишь школьников Казахстана к ҰБТ. Отвечай только JSON." }, { role: "user", content: prompt }], { json: true, temperature: 0.3, maxTokens: 6000, timeoutMs: 150_000 }));
-  const parsed = theorySchema.safeParse(parseJsonLoose(raw));
-  if (!parsed.success) throw new Error("конспект: неверный JSON");
+  const parsed = await withRetry(async () => {
+    const raw = await chat([{ role: "system", content: "Ты опытный учитель, готовишь школьников Казахстана к ҰБТ. Формулы пиши обычным текстом (x², √, ≤), без LaTeX. Отвечай только JSON." }, { role: "user", content: prompt }], { json: true, temperature: 0.3, maxTokens: 6000, timeoutMs: 150_000 });
+    const r = theorySchema.safeParse(parseJsonLoose(raw));
+    if (!r.success) throw new Error("конспект: неверный JSON");
+    return r;
+  });
   const pages = [...new Set(chunks.filter((c) => c.page).map((c) => `${c.book}, стр. ${c.page}`))].slice(0, 4).join("; ");
   await prisma.topic.update({
     where: { id: t.id },
@@ -150,7 +157,11 @@ async function main() {
       await new Promise((r) => setTimeout(r, delay));
     }
     if (a["dry-run"]) continue;
-    const topics = await prisma.topic.findMany({ where: { module: { subjectId: s.id }, theoryRu: "" }, orderBy: [{ module: { order: "asc" } }, { order: "asc" }] });
+    // --refresh-nobook: переписать конспекты «без учебника», если учебники по предмету появились
+    const topics = await prisma.topic.findMany({
+      where: { module: { subjectId: s.id }, OR: [{ theoryRu: "" }, ...(a["refresh-nobook"] ? [{ sourceBook: { contains: "без учебника" } }] : [])] },
+      orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
+    });
     for (const t of topics) {
       try {
         await writeTheory(t.id, log);

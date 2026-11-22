@@ -78,16 +78,16 @@ ${basis}
 
 Ответ — JSON {"questions":[{"text_ru":"","text_kk":"","options_ru":["","","",""],"options_kk":["","","",""],"correct":0,"explanation_ru":"","explanation_kk":"","source":""}]}`;
     try {
-      const raw = await withRetry(() =>
-        chat(
+      const parsed = await withRetry(async () => {
+        const raw = await chat(
           [
-            { role: "system", content: "Ты составляешь проверенные тестовые задания ҰБТ для школьников Казахстана. Каждый верный ответ перепроверяй. Отвечай только JSON." },
+            { role: "system", content: "Ты составляешь проверенные тестовые задания ҰБТ для школьников Казахстана. Каждый верный ответ перепроверяй. Формулы — обычным текстом (x², √), без LaTeX. Отвечай только JSON." },
             { role: "user", content: prompt },
           ],
           { json: true, temperature: 0.4, maxTokens: 8000, timeoutMs: 150_000 },
-        ),
-      );
-      const parsed = parseJsonLoose<{ questions?: unknown[] }>(raw);
+        );
+        return parseJsonLoose<{ questions?: unknown[] }>(raw);
+      });
       const valid = (parsed.questions ?? []).map((x) => qSchema.safeParse(x)).filter((r) => r.success).map((r) => r.data!);
       log(`[${t.module.subject.nameRu} / ${t.titleRu}] получено ${parsed.questions?.length ?? 0}, валидных ${valid.length}${chunks.length ? "" : " (без учебника)"}`);
       if (a["dry-run"]) {

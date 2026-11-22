@@ -89,5 +89,11 @@ export function parseJsonLoose<T>(text: string): T {
   const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   const raw = (m ? m[1] : text).trim();
   const start = raw.search(/[[{]/);
-  return JSON.parse(start > 0 ? raw.slice(start) : raw) as T;
+  const body = start > 0 ? raw.slice(start) : raw;
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    // частая ошибка модели: одиночные обратные слэши в формулах (\frac, \( …) — экранируем
+    return JSON.parse(body.replace(/\\(?!["\\/bfnrtu])/g, "\\\\")) as T;
+  }
 }
