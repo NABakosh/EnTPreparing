@@ -20,8 +20,22 @@ import { args, logger } from "./lib";
 export const EXTRA_SUBJECTS = [
   { slug: "biology", nameRu: "Биология", nameKk: "Биология", order: 13 },
   { slug: "chemistry", nameRu: "Химия", nameKk: "Химия", order: 14 },
+  { slug: "geography", nameRu: "География", nameKk: "География", order: 15 },
+  { slug: "world-history", nameRu: "Всемирная история", nameKk: "Дүниежүзі тарихы", order: 16 },
+  { slug: "law", nameRu: "Основы права", nameKk: "Құқық негіздері", order: 17 },
+  { slug: "english", nameRu: "Иностранный язык (английский)", nameKk: "Шетел тілі (ағылшын)", order: 18 },
 ];
-export const EXTRA_PAIRS: [string, string][] = [["biology", "chemistry"]];
+/** Профильные пары ҰБТ (сверить с актуальным перечнем НЦТ). */
+export const EXTRA_PAIRS: [string, string][] = [
+  ["biology", "chemistry"],
+  ["math", "geography"],
+  ["biology", "geography"],
+  ["chemistry", "physics"],
+  ["world-history", "law"],
+  ["world-history", "geography"],
+  ["english", "world-history"],
+  ["geography", "english"],
+];
 
 const structSchema = z.object({
   modules: z
@@ -50,6 +64,8 @@ function similar(a: string, b: string) {
 }
 
 const SUBJECT_HINT: Record<string, string> = {
+  english: "Иностранный язык (английский) в ҰБТ: грамматика (времена, модальные глаголы, условные предложения, пассив, косвенная речь, артикли, предлоги), лексика и чтение (reading comprehension). Названия тем на русском/казахском, термины на английском в скобках.",
+  law: "Основы права в ҰБТ (предмет «Человек. Общество. Право»): государство и право, Конституция РК, права человека, гражданское, трудовое, семейное, административное, уголовное право РК.",
   "math-literacy": "Математическая грамотность в ҰБТ — практические задачи: проценты, пропорции, единицы измерения, чтение таблиц и диаграмм, вероятность, логика, геометрия в быту.",
   "reading-literacy": "Грамотность чтения в ҰБТ — понимание текста: основная мысль, факты, вывод, значение слов, аргументация, нелинейные тексты (таблицы, графики), сравнение текстов.",
 };

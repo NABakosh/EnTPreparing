@@ -148,6 +148,23 @@ export async function setQuestionStatus(actor: CurrentUser, id: string, status: 
   return prisma.question.update({ where: { id }, data: { status } });
 }
 
+/** Массовая смена статуса (проверка пачкой). Каждый вопрос проходит те же проверки, что и по одному. */
+export async function setQuestionsStatusBulk(actor: CurrentUser, ids: string[], status: QuestionStatus) {
+  staff(actor);
+  const uniq = [...new Set(ids)].slice(0, 100);
+  let ok = 0;
+  let failed = 0;
+  for (const id of uniq) {
+    try {
+      await setQuestionStatus(actor, id, status);
+      ok++;
+    } catch {
+      failed++;
+    }
+  }
+  return { ok, failed };
+}
+
 export async function deleteQuestion(actor: CurrentUser, id: string) {
   if (actor.role !== "ADMIN") throw new AppError("forbidden", 403);
   await prisma.question.delete({ where: { id } });

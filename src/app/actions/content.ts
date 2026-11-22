@@ -81,6 +81,14 @@ export async function setQuestionStatusAction(id: string, status: QuestionStatus
     revalidatePath("/teacher/review");
   });
 }
+export async function setQuestionsStatusBulkAction(ids: string[], status: QuestionStatus) {
+  return run(async () => {
+    const res = await questions.setQuestionsStatusBulk(await requireUser("ADMIN", "TEACHER"), ids, status);
+    revalidatePath("/admin/questions");
+    revalidatePath("/teacher/review");
+    return res;
+  });
+}
 export async function deleteQuestionAction(id: string) {
   return run(async () => {
     await questions.deleteQuestion(await requireUser("ADMIN"), id);

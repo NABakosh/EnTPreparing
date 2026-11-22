@@ -110,4 +110,14 @@ describe("импорт вопросов", () => {
     expect(second.needsReviewKk).toBe(true);
     await expect(importQuestions(teacher, new File([csv], "x.csv"))).rejects.toThrow("forbidden");
   });
+
+  it("массовая публикация: только черновики, по тем же правилам", async () => {
+    const { setQuestionsStatusBulk } = await import("@/server/services/questions");
+    const d1 = await draft();
+    const d2 = await draft();
+    const pub = await draft("PUBLISHED");
+    const res = await setQuestionsStatusBulk(teacher, [d1.id, d2.id, pub.id, "no-such-id"], "PUBLISHED");
+    expect(res).toEqual({ ok: 2, failed: 2 });
+    expect((await prisma.question.findUniqueOrThrow({ where: { id: d1.id } })).status).toBe("PUBLISHED");
+  });
 });

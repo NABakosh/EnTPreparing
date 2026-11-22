@@ -609,7 +609,13 @@
     "published": "Вопрос опубликован",
     "edit": "Править",
     "reject": "Отклонить",
-    "rejectConfirm": "Отклонить этот вопрос?"
+    "rejectConfirm": "Отклонить этот вопрос?",
+    "selectAll": "Выбрать все на странице",
+    "selected": "Выбрано: {count}",
+    "publishSelected": "Опубликовать выбранные",
+    "rejectSelected": "Отклонить выбранные",
+    "bulkDone": "Готово: {ok}, с ошибкой: {failed}",
+    "selectOne": "Выбрать вопрос"
   },
   "mentor": {
     "title": "ИИ-ментор",

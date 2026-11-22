@@ -14,6 +14,7 @@ import { requirePageUser } from "@/server/auth/current";
 import { pickText } from "@/server/lib/i18n-fields";
 import { listSubjects } from "@/server/services/catalog";
 import { reviewQueue } from "@/server/services/questions";
+import { BULK_FORM, BulkBar } from "./bulk-bar";
 
 const LETTERS = "ABCDEFGH";
 
@@ -39,6 +40,8 @@ export default async function ReviewPage({ searchParams }: PageProps<"/teacher/r
       {items.length === 0 ? (
         <EmptyState text={t("questions.reviewEmpty")} />
       ) : (
+        <>
+        <BulkBar />
         <ul className="space-y-4">
           {items.map((q) => {
             const opts = q.options as { ru: string; kk: string }[];
@@ -46,6 +49,10 @@ export default async function ReviewPage({ searchParams }: PageProps<"/teacher/r
             return (
               <li key={q.id} className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" name="ids" value={q.id} form={BULK_FORM} className="size-5 accent-primary" />
+                    <span className="sr-only">{t("questions.selectOne")}</span>
+                  </label>
                   <QuestionBadges status={q.status} aiGenerated={q.aiGenerated} isDemo={q.isDemo} needsReviewKk={q.needsReviewKk} type={q.type} />
                   <span className="text-xs text-muted-foreground">{pickText(q.subject, "name", locale)} · {pickText(q.topic, "title", locale)}</span>
                 </div>
@@ -75,6 +82,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/teacher/r
             );
           })}
         </ul>
+        </>
       )}
       {pages > 1 && (
         <nav className="flex items-center justify-between" aria-label={t("common.page", { page, pages })}>
