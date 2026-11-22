@@ -154,7 +154,7 @@ export async function resetPassword(actor: CurrentUser, userId: string): Promise
     } else throw new AppError("forbidden", 403);
   } else if (actor.role !== "ADMIN") throw new AppError("forbidden", 403);
   const password = generatePassword();
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(password), mustChangePassword: true } });
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash: await hashPassword(password), mustChangePassword: true, sessionVersion: { increment: 1 } } });
   return { fullName: u.fullName, role: u.role, className: u.class?.name ?? "", login: u.login, password };
 }
 

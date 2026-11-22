@@ -15,7 +15,8 @@
     "ingest-books": "tsx scripts/ingest-books.ts",
     "generate-questions": "tsx scripts/generate-questions.ts",
     "translate-kk": "tsx scripts/translate-kk.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

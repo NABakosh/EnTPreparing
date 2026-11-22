@@ -63,6 +63,7 @@ model User {
   profilePairId      String?
   profilePair        ProfilePair? @relation(fields: [profilePairId], references: [id], onDelete: SetNull)
   mustChangePassword Boolean   @default(true)
+  sessionVersion     Int       @default(0) // увеличивается при смене/сбросе пароля — старые JWT недействительны
   active             Boolean   @default(true)
   lastLoginAt        DateTime?
   createdAt          DateTime  @default(now())

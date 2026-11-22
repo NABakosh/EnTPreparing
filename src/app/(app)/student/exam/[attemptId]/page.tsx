@@ -21,7 +21,7 @@ export default async function ExamRunPage({ params }: PageProps<"/student/exam/[
   if (a.kind !== "EXAM") redirect(`/student/test/${attemptId}`);
   if (a.status === "FINISHED") redirect(`/student/result/${attemptId}`);
   const now = new Date();
-  if (a.deadlineAt && a.deadlineAt < now) {
+  if (a.deadlineAt && a.deadlineAt.getTime() + 60_000 < now.getTime()) {
     await finishAttempt(user, attemptId);
     redirect(`/student/result/${attemptId}`);
   }

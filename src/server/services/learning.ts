@@ -107,7 +107,8 @@ export async function programCompletion(userId: string) {
   const program = await programSubjectIds(userId);
   const modules = await prisma.module.findMany({
     where: { subjectId: { in: program.ids } },
-    include: { topics: { select: { id: true } }, subject: true },
+    // темы без опубликованных вопросов пройти нельзя — их не учитываем в программе
+    include: { topics: { where: { questions: { some: { status: "PUBLISHED" } } }, select: { id: true } }, subject: true },
     orderBy: [{ subject: { order: "asc" } }, { order: "asc" }],
   });
   const done = new Set(
@@ -122,6 +123,7 @@ export async function programCompletion(userId: string) {
     total: m.topics.length,
     done: m.topics.filter((t) => done.has(t.id)).length,
   }));
-  const complete = program.hasPair && list.length > 0 && list.every((m) => m.total > 0 && m.done === m.total);
+  const counted = list.filter((m) => m.total > 0);
+  const complete = program.hasPair && counted.length > 0 && counted.every((m) => m.done === m.total);
   return { modules: list, complete, hasPair: program.hasPair, pairId: program.pairId };
 }

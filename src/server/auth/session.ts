@@ -4,7 +4,7 @@ export const SESSION_COOKIE = "session";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 export type Role = "ADMIN" | "TEACHER" | "STUDENT" | "PARENT";
-export type SessionPayload = { sub: string; role: Role };
+export type SessionPayload = { sub: string; role: Role; v?: number };
 
 function secret() {
   const s = process.env.JWT_SECRET;
@@ -13,7 +13,7 @@ function secret() {
 }
 
 export async function signSession(p: SessionPayload): Promise<string> {
-  return new SignJWT({ role: p.role })
+  return new SignJWT({ role: p.role, v: p.v ?? 0 })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(p.sub)
     .setIssuedAt()
@@ -26,7 +26,7 @@ export async function verifySession(token: string | undefined): Promise<SessionP
   try {
     const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
     if (!payload.sub || typeof payload.role !== "string") return null;
-    return { sub: payload.sub, role: payload.role as Role };
+    return { sub: payload.sub, role: payload.role as Role, v: typeof payload.v === "number" ? payload.v : 0 };
   } catch {
     return null;
   }

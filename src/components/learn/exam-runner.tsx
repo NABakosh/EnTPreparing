@@ -64,7 +64,8 @@ export function ExamRunner({
     } catch {}
   }, [flagsKey]);
 
-  const flush = useCallback(async (): Promise<boolean> => {
+  const inflight = useRef<Promise<boolean> | null>(null);
+  const flushOnce = useCallback(async (): Promise<boolean> => {
     const patch = dirty.current;
     if (!Object.keys(patch).length) return true;
     dirty.current = {};
@@ -94,10 +95,30 @@ export function ExamRunner({
     }
   }, [attemptId, router]);
 
+  /** Сохранения идут строго по одному, чтобы не перезаписать друг друга. */
+  const flush = useCallback(async (): Promise<boolean> => {
+    while (inflight.current) await inflight.current;
+    const p = flushOnce();
+    inflight.current = p;
+    try {
+      return await p;
+    } finally {
+      inflight.current = null;
+    }
+  }, [flushOnce]);
+
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     startFinish(async () => {
-      await flush();
+      const saved = await flush();
+      if (!saved && !finishedRef.current) {
+        // не завершаем, пока ответы не сохранены (кроме истечения времени — сервер сам примет последние сохранённые)
+        if (Date.now() + offset < deadlineMs) {
+          toast.error(t("exam.saveError"));
+          return;
+        }
+      }
+      if (finishedRef.current) return;
       const res = await finishAttemptAction(attemptId);
       if (res.ok) {
         finishedRef.current = true;
@@ -105,7 +126,7 @@ export function ExamRunner({
         router.replace(`/student/result/${attemptId}`);
       } else toast.error(t(`errors.${res.error}`));
     });
-  }, [attemptId, flagsKey, flush, router, t]);
+  }, [attemptId, flagsKey, flush, router, t, offset, deadlineMs]);
 
   // таймер + автозавершение
   useEffect(() => {

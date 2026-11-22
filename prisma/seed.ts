@@ -6,6 +6,7 @@ import { history } from "./seed/history";
 import { reading } from "./seed/reading";
 import { informatics, math, mathLiteracy, physics } from "./seed/procedural";
 import type { SeedSubject } from "./seed/types";
+import { seedActivity } from "./seed/activity";
 
 const prisma = new PrismaClient();
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
@@ -197,6 +198,11 @@ async function main() {
   ];
   for (const n of news) {
     await prisma.news.upsert({ where: { slug: n.slug }, create: { ...n, status: "PUBLISHED" }, update: {} });
+  }
+
+  if (process.env.SEED_ACTIVITY !== "0") {
+    console.log("Демо-активность учеников (тесты и пробные экзамены)…");
+    await seedActivity(prisma);
   }
 
   console.log("\nДемо-аккаунты (сохраните, пароли не хранятся в открытом виде):");

@@ -60,6 +60,7 @@ export function revealedQuestion(q: Question, locale: Locale) {
 
 export async function startTopicTest(actor: CurrentUser, topicId: string) {
   assertStudent(actor);
+  if (!(await prisma.topic.findUnique({ where: { id: topicId }, select: { id: true } }))) throw new AppError("not_found", 404);
   const qs = await prisma.question.findMany({ where: { topicId, status: "PUBLISHED" }, select: { id: true } });
   if (!qs.length) throw new AppError("no_questions");
   const items: Item[] = shuffle(qs).slice(0, TOPIC_TEST_SIZE).map((q) => ({ id: q.id, section: "topic" }));
@@ -136,6 +137,14 @@ export async function activeExam(userId: string) {
 
 export async function startExam(actor: CurrentUser, pairId: string) {
   assertStudent(actor);
+  // одна активная попытка экзамена на ученика: сериализуем параллельные старты
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"exam:" + actor.id}))`;
+    return startExamLocked(actor, pairId);
+  }, { timeout: 30_000 });
+}
+
+async function startExamLocked(actor: CurrentUser, pairId: string) {
   const existing = await activeExam(actor.id);
   if (existing) {
     if (existing.deadlineAt && existing.deadlineAt.getTime() + EXAM_GRACE_MS < Date.now()) await finishAttempt(actor, existing.id);
@@ -184,25 +193,42 @@ export async function saveExamAnswers(actor: CurrentUser, attemptId: string, pat
     throw new AppError("time_over");
   }
   const allowed = new Set((a.items as Item[]).map((i) => i.id));
-  const answers = { ...((a.answers ?? {}) as Answers) };
+  const set: Answers = {};
+  const removed: string[] = [];
   for (const [qid, sel] of Object.entries(patch)) {
     if (!allowed.has(qid)) continue;
     const nums = asNums(sel).slice(0, 10);
-    if (nums.length) answers[qid] = nums;
-    else delete answers[qid];
+    if (nums.length) set[qid] = nums;
+    else removed.push(qid);
   }
-  await prisma.attempt.update({ where: { id: a.id }, data: { answers } });
+  // атомарное слияние в БД: параллельные сохранения не затирают друг друга, после завершения запись невозможна
+  const graceSec = EXAM_GRACE_MS / 1000;
+  const n = await prisma.$executeRaw`
+    UPDATE "Attempt"
+    SET answers = (answers || ${JSON.stringify(set)}::jsonb) - ${removed}::text[]
+    WHERE id = ${a.id} AND status = 'IN_PROGRESS'
+      AND ("deadlineAt" IS NULL OR "deadlineAt" + make_interval(secs => ${graceSec}) > now())`;
+  if (n === 0) throw new AppError("attempt_finished");
   return { savedAt: new Date().toISOString() };
 }
 
 // ───────────── Завершение и подсчёт ─────────────
 
 export async function finishAttempt(actor: CurrentUser, attemptId: string) {
-  const a = await ownAttempt(actor, attemptId);
-  if (a.status === "FINISHED") return a;
+  await ownAttempt(actor, attemptId);
+  // блокируем строку, чтобы автосохранение не изменило ответы между подсчётом и записью
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "Attempt" WHERE id = ${attemptId} FOR UPDATE`;
+    const a = await tx.attempt.findUniqueOrThrow({ where: { id: attemptId } });
+    if (a.status === "FINISHED") return a;
+    return finishLocked(tx, a);
+  });
+}
+
+async function finishLocked(tx: Prisma.TransactionClient, a: Awaited<ReturnType<typeof prisma.attempt.findUniqueOrThrow>>) {
   const items = a.items as Item[];
   const answers = (a.answers ?? {}) as Answers;
-  const qs = await prisma.question.findMany({ where: { id: { in: items.map((i) => i.id) } }, select: { id: true, type: true, correct: true, topicId: true, subjectId: true } });
+  const qs = await tx.question.findMany({ where: { id: { in: items.map((i) => i.id) } }, select: { id: true, type: true, correct: true, topicId: true, subjectId: true } });
   const qm = new Map(qs.map((q) => [q.id, q]));
 
   let score = 0;
@@ -234,23 +260,20 @@ export async function finishAttempt(actor: CurrentUser, attemptId: string) {
   const end = a.deadlineAt && finishedAt > a.deadlineAt ? a.deadlineAt : finishedAt;
   const durationSec = Math.max(0, Math.round((end.getTime() - a.startedAt.getTime()) / 1000));
 
-  const updated = await prisma.$transaction(async (tx) => {
-    // защита от двойного завершения
-    const res = await tx.attempt.updateMany({
-      where: { id: a.id, status: "IN_PROGRESS" },
-      data: { status: "FINISHED", score, maxScore: max, correctCount, total: items.length, finishedAt, durationSec, sectionScores: sections },
-    });
-    if (res.count === 0) return tx.attempt.findUniqueOrThrow({ where: { id: a.id } });
-    if (rows.length) await tx.attemptAnswer.createMany({ data: rows });
-    return tx.attempt.findUniqueOrThrow({ where: { id: a.id } });
+  // защита от двойного завершения (строка уже заблокирована FOR UPDATE)
+  const res = await tx.attempt.updateMany({
+    where: { id: a.id, status: "IN_PROGRESS" },
+    data: { status: "FINISHED", score, maxScore: max, correctCount, total: items.length, finishedAt, durationSec, sectionScores: sections },
   });
+  if (res.count > 0 && rows.length) await tx.attemptAnswer.createMany({ data: rows });
+  const updated = await tx.attempt.findUniqueOrThrow({ where: { id: a.id } });
 
   if (a.kind === "TOPIC" && a.topicId && updated.status === "FINISHED") {
     const pct = max ? Math.round((score / max) * 100) : 0;
     const threshold = await getModuleThreshold();
-    const prev = await prisma.topicProgress.findUnique({ where: { userId_topicId: { userId: a.userId, topicId: a.topicId } } });
+    const prev = await tx.topicProgress.findUnique({ where: { userId_topicId: { userId: a.userId, topicId: a.topicId } } });
     const best = Math.max(prev?.bestPercent ?? 0, pct);
-    await prisma.topicProgress.upsert({
+    await tx.topicProgress.upsert({
       where: { userId_topicId: { userId: a.userId, topicId: a.topicId } },
       create: { userId: a.userId, topicId: a.topicId, bestPercent: best, lastPercent: pct, completed: best >= threshold },
       update: { bestPercent: best, lastPercent: pct, completed: best >= threshold },

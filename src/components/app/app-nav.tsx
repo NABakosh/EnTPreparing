@@ -17,6 +17,9 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 
 function isActive(pathname: string, href: string, all: NavItem[]) {
   if (pathname === href) return true;
+  const self = all.find((i) => i.href === href);
+  if (self?.also?.some((p) => pathname.startsWith(p))) return true;
+  if (all.some((i) => i.href !== href && i.also?.some((p) => pathname.startsWith(p)))) return false;
   if (!pathname.startsWith(href + "/")) return false;
   // не подсвечивать корневой пункт, если есть более точный
   return !all.some((i) => i.href !== href && i.href.startsWith(href) && (pathname === i.href || pathname.startsWith(i.href + "/")));

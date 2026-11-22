@@ -1,20 +1,20 @@
 import type { Role } from "@/server/auth/session";
 
-export type NavItem = { href: string; label: string; icon: string };
+export type NavItem = { href: string; label: string; icon: string; also?: string[] };
 
 /** label — ключ в nav.* */
 export const NAV: Record<Role, NavItem[]> = {
   STUDENT: [
     { href: "/student", label: "dashboard", icon: "home" },
-    { href: "/student/learn", label: "learn", icon: "book" },
-    { href: "/student/exam", label: "exam", icon: "timer" },
+    { href: "/student/learn", label: "learn", icon: "book", also: ["/student/topic", "/student/test"] },
+    { href: "/student/exam", label: "exam", icon: "timer", also: ["/student/result"] },
     { href: "/student/mistakes", label: "mistakes", icon: "x" },
     { href: "/student/stats", label: "stats", icon: "chart" },
     { href: "/student/mentor", label: "mentor", icon: "bot" },
     { href: "/student/certificate", label: "certificate", icon: "award" },
   ],
   TEACHER: [
-    { href: "/teacher", label: "classes", icon: "home" },
+    { href: "/teacher", label: "classes", icon: "home", also: ["/teacher/class", "/teacher/student"] },
     { href: "/teacher/accounts", label: "createAccounts", icon: "userplus" },
     { href: "/teacher/review", label: "review", icon: "check" },
   ],

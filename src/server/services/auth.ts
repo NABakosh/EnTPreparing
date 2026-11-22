@@ -10,6 +10,9 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
+// хэш-заглушка для несуществующих логинов
+const DUMMY_HASH = "$2b$10$GqMvp5MSYonUdikVSENd2u9zpjWAGvKd1f0rfhR/0.9EUy8UzUKGi";
+
 // простая защита от перебора (в памяти процесса)
 const failures = new Map<string, { count: number; until: number }>();
 
@@ -22,7 +25,8 @@ export async function login(input: unknown): Promise<{ token: string; role: Role
   if (f && f.until > Date.now()) throw new AppError("too_many_attempts", 429);
 
   const user = await prisma.user.findUnique({ where: { login } });
-  const ok = user ? await verifyPassword(password, user.passwordHash) : false;
+  // одинаковое время ответа для существующих и несуществующих логинов
+  const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !ok) {
     const count = (f?.count ?? 0) + 1;
     failures.set(login, { count, until: count >= 5 ? Date.now() + 5 * 60_000 : 0 });
@@ -31,7 +35,7 @@ export async function login(input: unknown): Promise<{ token: string; role: Role
   if (!user.active) throw new AppError("account_blocked", 403);
   failures.delete(login);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-  const token = await signSession({ sub: user.id, role: user.role });
+  const token = await signSession({ sub: user.id, role: user.role, v: user.sessionVersion });
   return { token, role: user.role, mustChangePassword: user.mustChangePassword };
 }
 
@@ -53,7 +57,7 @@ export async function changePassword(actor: CurrentUser, input: unknown): Promis
   if (!(await verifyPassword(parsed.data.current, user.passwordHash))) throw new AppError("wrong_current_password");
   await prisma.user.update({
     where: { id: actor.id },
-    data: { passwordHash: await hashPassword(parsed.data.next), mustChangePassword: false },
+    data: { passwordHash: await hashPassword(parsed.data.next), mustChangePassword: false, sessionVersion: { increment: 1 } },
   });
 }
 

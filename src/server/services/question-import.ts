@@ -81,10 +81,14 @@ export async function importQuestions(actor: CurrentUser, file: File): Promise<Q
     if (!topic) { errors.push({ row: rowNo, code: "row_topic_not_found" }); continue; }
     const textRu = cell(ci.text);
     if (!textRu) { errors.push({ row: rowNo, code: "row_no_text" }); continue; }
-    const options = optCols.map((o) => ({ ru: cell(o.ru), kk: cell(o.kk) })).filter((o) => o.ru || o.kk);
+    const allOpts = optCols.map((o) => ({ ru: cell(o.ru), kk: cell(o.kk) }));
+    const keep = allOpts.map((o, i) => (o.ru || o.kk ? i : -1)).filter((i) => i >= 0);
+    const options = keep.map((i) => allOpts[i]);
     if (options.length < 2) { errors.push({ row: rowNo, code: "row_few_options" }); continue; }
-    const correct = parseCorrect(cell(ci.correct), options.length);
-    if (!correct) { errors.push({ row: rowNo, code: "row_bad_correct" }); continue; }
+    // буква «Верный» относится к исходным колонкам; пустые варианты убираем после сопоставления
+    const rawCorrect = parseCorrect(cell(ci.correct), allOpts.length);
+    if (!rawCorrect || rawCorrect.some((i) => !keep.includes(i))) { errors.push({ row: rowNo, code: "row_bad_correct" }); continue; }
+    const correct = rawCorrect.map((i) => keep.indexOf(i));
     const textKk = cell(ci.textKk);
     data.push({
       topicId: topic.id,

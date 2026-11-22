@@ -42,7 +42,8 @@ export function CredentialsResult({ creds, fileBase64 }: { creds: Cred[]; fileBa
           type="button"
           variant="outline"
           onClick={() => {
-            const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+            // защита от формул в Excel: значения, начинающиеся с = + - @ и т. п., экранируются апострофом
+            const esc = (s: string) => `"${(/^[=+\-@\t\r]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
             const csv = ["ФИО;Роль;Класс;Логин;Пароль", ...creds.map((c) => [c.fullName, t(`nav.roles.${c.role}`), c.className, c.login, c.password].map(esc).join(";"))].join("\r\n");
             download(`logins-${stamp}.csv`, new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
           }}

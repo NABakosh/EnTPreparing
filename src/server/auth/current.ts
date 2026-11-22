@@ -23,9 +23,10 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (!s) return null;
   const u = await prisma.user.findUnique({
     where: { id: s.sub },
-    select: { id: true, role: true, fullName: true, login: true, classId: true, profilePairId: true, mustChangePassword: true, active: true },
+    select: { id: true, role: true, fullName: true, login: true, classId: true, profilePairId: true, mustChangePassword: true, active: true, sessionVersion: true },
   });
-  if (!u || !u.active) return null;
+  // токен отзывается сменой/сбросом пароля (sessionVersion)
+  if (!u || !u.active || u.sessionVersion !== (s.v ?? 0)) return null;
   return { id: u.id, role: u.role, fullName: u.fullName, login: u.login, classId: u.classId, profilePairId: u.profilePairId, mustChangePassword: u.mustChangePassword };
 });
 
