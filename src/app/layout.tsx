@@ -18,8 +18,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   return (
-    <html lang={locale} className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-background">
+    <html lang={locale} className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <body className="flex min-h-full flex-col bg-background" suppressHydrationWarning>
         <NextIntlClientProvider>
           {children}
           <Toaster position="top-center" />

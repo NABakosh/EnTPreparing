@@ -18,7 +18,10 @@ export function MentorChat({ topicId, compact = false, limit }: { topicId?: stri
   const [busy, setBusy] = useState(false);
   const [used, setUsed] = useState(limit?.used ?? 0);
   const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => endRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }), [msgs.length, busy]);
+  useEffect(() => {
+    // в новых браузерах scrollIntoView возвращает Promise — его нельзя возвращать из эффекта
+    endRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [msgs.length, busy]);
 
   const ask = async () => {
     const question = q.trim();
