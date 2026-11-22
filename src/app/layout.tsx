@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
 import { BRAND } from "@/config/site";
 import "./globals.css";
@@ -24,6 +25,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <Toaster position="top-center" />
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
