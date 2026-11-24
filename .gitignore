@@ -47,3 +47,6 @@ resources/
 /exports/
 /logs/
 /screenshots/
+
+# образец сертификата: скан с печатью и подписью
+/certicate_example.pdf

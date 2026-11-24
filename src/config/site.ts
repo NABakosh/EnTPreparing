@@ -10,6 +10,12 @@ export const SITE_SHORT = "ENT";
 /** Путь к картинке-логотипу в public/ (например "/logo.png"). null — текстовый логотип. */
 export const SITE_LOGO: string | null = null;
 
+/** Подписант сертификата (официальные реквизиты на казахском, как в образце школы). */
+export const CERTIFICATE_SIGNER = {
+  position: ["И.Қ. Мандоки атындағы № 154 жалпы білім", "беретін мектептің директоры"],
+  name: "К.К. АЛМАСБАЕВА",
+};
+
 export const LOCALES = ["kk", "ru"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "kk";
