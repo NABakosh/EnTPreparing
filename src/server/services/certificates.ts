@@ -76,9 +76,22 @@ function wrap(text: string, font: PDFFont, size: number, max: number): string[] 
   return lines;
 }
 
+/** Скан школы (с подписью и печатью). Текст на нём только про математику и информатику. Файл вне git. */
+async function scanBackground(c: CertData): Promise<Buffer | null> {
+  const names = c.profilePair ? [c.profilePair.subject1.nameRu, c.profilePair.subject2.nameRu].map((n) => n.trim().toLowerCase()) : [];
+  if (names.length !== 2 || !names.includes("математика") || !names.includes("информатика")) return null;
+  try {
+    return await fs.readFile(path.join(process.cwd(), "src/server/assets/private/certificate-scan.jpg"));
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw e;
+  }
+}
+
 /**
  * PDF A4 книжный по образцу школы, на двух языках, с QR-кодом на страницу проверки.
- * Подпись и печать намеренно не вшиты: их ставят на распечатанный сертификат (см. DECISIONS.md).
+ * Для пары «математика — информатика» фон — скан школы с подписью и печатью; для остальных пар
+ * (или если скана нет) — шаблон с местом для живой подписи и печати (см. DECISIONS.md).
  */
 export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
   const dir = path.join(process.cwd(), "src/server/assets");
@@ -95,8 +108,13 @@ export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
   const W = 595;
   const H = 842;
   const page = pdf.addPage([W, H]);
-  const [bg] = await pdf.embedPdf(background);
-  page.drawPage(bg, { x: 0, y: 0, width: W, height: H });
+  const scan = await scanBackground(c);
+  if (scan) {
+    page.drawImage(await pdf.embedJpg(scan), { x: 0, y: 0, width: W, height: H });
+  } else {
+    const [bg] = await pdf.embedPdf(background);
+    page.drawPage(bg, { x: 0, y: 0, width: W, height: H });
+  }
   const blue = rgb(0.17, 0.31, 0.53);
   const muted = rgb(0.35, 0.37, 0.45);
 
@@ -106,44 +124,46 @@ export async function renderCertificatePdf(c: CertData): Promise<Uint8Array> {
   // ФИО — подбираем размер под ширину
   let size = 28;
   while (serif.widthOfTextAtSize(c.fullName, size) > W - 170 && size > 10) size -= 1;
-  center(c.fullName, H - 312, size, serif);
+  center(c.fullName, scan ? H - 300 : H - 312, size, serif);
 
-  const pair = c.profilePair;
-  const lower = (s: string) => s.toLocaleLowerCase("ru-RU");
-  const kkCourse = pair ? `${lower(pair.subject1.nameKk)} және ${lower(pair.subject2.nameKk)} пәндері бойынша ` : "";
-  const ruCourse = pair ? ` по предметам «${pair.subject1.nameRu}» и «${pair.subject2.nameRu}»` : "";
-  const kk =
-    `«${BRAND}» платформасында ${kkCourse}ҰБТ-ға дайындық оқу курсын толық аяқтағанын растайды. ` +
-    "Курс барысында білім алушы аталған пәндер бойынша білімін жетілдіріп, теориялық және практикалық тапсырмаларды орындау дағдыларын дамытты. " +
-    "Сертификат оқу курсын аяқтағанын растайтын құжат ретінде жоғары оқу орындарына ұсыну үшін берілді.";
-  const ru =
-    `Подтверждает полное прохождение курса подготовки к ҰБТ${ruCourse} на платформе «${BRAND}». ` +
-    "Выдан для представления в высшие учебные заведения как подтверждение окончания курса.";
-  let y = H - 356;
-  for (const line of wrap(kk, serif, 15.5, W - 110)) {
-    center(line, y, 15.5, serif);
-    y -= 22;
-  }
-  y -= 4;
-  for (const line of wrap(ru, font, 9.5, W - 150)) {
-    center(line, y, 9.5, font, muted);
-    y -= 14;
-  }
-
-  // Место для живой подписи и печати
   const signY = 214;
-  page.drawLine({ start: { x: 205, y: signY }, end: { x: 390, y: signY }, thickness: 1, color: blue });
-  CERTIFICATE_SIGNER.position.forEach((line, i) => center(line, signY - 18 - i * 14, 10.5, font));
-  center(CERTIFICATE_SIGNER.name, signY - 52, 11.5, font);
+  if (!scan) {
+    const pair = c.profilePair;
+    const lower = (s: string) => s.toLocaleLowerCase("ru-RU");
+    const kkCourse = pair ? `${lower(pair.subject1.nameKk)} және ${lower(pair.subject2.nameKk)} пәндері бойынша ` : "";
+    const ruCourse = pair ? ` по предметам «${pair.subject1.nameRu}» и «${pair.subject2.nameRu}»` : "";
+    const kk =
+      `«${BRAND}» платформасында ${kkCourse}ҰБТ-ға дайындық оқу курсын толық аяқтағанын растайды. ` +
+      "Курс барысында білім алушы аталған пәндер бойынша білімін жетілдіріп, теориялық және практикалық тапсырмаларды орындау дағдыларын дамытты. " +
+      "Сертификат оқу курсын аяқтағанын растайтын құжат ретінде жоғары оқу орындарына ұсыну үшін берілді.";
+    const ru =
+      `Подтверждает полное прохождение курса подготовки к ҰБТ${ruCourse} на платформе «${BRAND}». ` +
+      "Выдан для представления в высшие учебные заведения как подтверждение окончания курса.";
+    let y = H - 356;
+    for (const line of wrap(kk, serif, 15.5, W - 110)) {
+      center(line, y, 15.5, serif);
+      y -= 22;
+    }
+    y -= 4;
+    for (const line of wrap(ru, font, 9.5, W - 150)) {
+      center(line, y, 9.5, font, muted);
+      y -= 14;
+    }
+    // Место для живой подписи и печати
+        page.drawLine({ start: { x: 205, y: signY }, end: { x: 390, y: signY }, thickness: 1, color: blue });
+    CERTIFICATE_SIGNER.position.forEach((line, i) => center(line, signY - 18 - i * 14, 10.5, font));
+    center(CERTIFICATE_SIGNER.name, signY - 52, 11.5, font);
+  }
 
   const url = `${siteUrl()}/verify/${c.number}`;
   const date = c.issuedAt.toLocaleDateString("ru-RU", { timeZone: "Asia/Almaty" });
-  center(`№ ${c.number}`, signY - 80, 10.5, font);
-  center(`Берілген күні / Дата выдачи: ${date}`, signY - 95, 9, font, muted);
+  const numberY = scan ? 92 : signY - 80;
+  center(`№ ${c.number}`, numberY, 10.5, font);
+  center(`Берілген күні / Дата выдачи: ${date}`, numberY - 15, 9, font, muted);
   const qr = await QRCode.toBuffer(url, { type: "png", margin: 2, width: 300, errorCorrectionLevel: "M" });
-  page.drawImage(await pdf.embedPng(qr), { x: W - 40 - 88, y: 64, width: 88, height: 88 });
+  page.drawImage(await pdf.embedPng(qr), { x: W - 40 - 88, y: scan ? 54 : 64, width: 88, height: 88 });
   const label = "Тексеру / Проверка";
-  page.drawText(label, { x: W - 84 - font.widthOfTextAtSize(label, 8) / 2, y: 52, size: 8, font, color: muted });
+  page.drawText(label, { x: W - 84 - font.widthOfTextAtSize(label, 8) / 2, y: scan ? 42 : 52, size: 8, font, color: muted });
 
   return pdf.save();
 }

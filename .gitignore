@@ -50,3 +50,5 @@ resources/
 
 # образец сертификата: скан с печатью и подписью
 /certicate_example.pdf
+# скан с печатью и подписью: репозиторий публичный
+/src/server/assets/private/
