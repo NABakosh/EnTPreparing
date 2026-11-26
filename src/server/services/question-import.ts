@@ -34,7 +34,7 @@ export function parseCorrect(raw: string, optionCount: number): number[] | null 
  */
 export async function importQuestions(actor: CurrentUser, file: File): Promise<QuestionImportResult> {
   if (actor.role !== "ADMIN") throw new AppError("forbidden", 403);
-  const { headers, rows } = await readTable(file);
+  const { headers, rows, lines } = await readTable(file);
   if (!rows.length) throw new AppError("empty_file");
   if (rows.length > 2000) throw new AppError("too_many_rows");
   const h = headers.map(norm);
@@ -74,7 +74,7 @@ export async function importQuestions(actor: CurrentUser, file: File): Promise<Q
   const errors: { row: number; code: string }[] = [];
   const data = [];
   for (const [i, r] of rows.entries()) {
-    const rowNo = i + 2;
+    const rowNo = lines[i];
     const cell = (c: number) => (c >= 0 ? (r[c] ?? "").trim() : "");
     const topicRaw = cell(ci.topic);
     const topic = byId.get(topicRaw) ?? byTitle.get(topicRaw.toLowerCase());

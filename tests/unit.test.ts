@@ -53,3 +53,16 @@ describe("i18n fields", () => {
     expect(pick({ titleRu: "Тема", titleKk: "Тақырып" }, "title", "kk")).toEqual({ text: "Тақырып", fallback: false });
   });
 });
+
+describe("sheets.col: заголовки с пробелами вокруг дефиса", async () => {
+  const { col, isNumberHeader } = await import("@/server/lib/sheets");
+  it("«Оқушының аты -  жөні» не путается с колонкой родителя и «№»", () => {
+    const headers = ["№", "оқушының аты -  жөні", "сынып", "ата-анасының аты-жөні"];
+    const cls = col(headers, ["класс", "сынып"], -1);
+    const parent = col(headers, ["родител", "ата ана"], -1, [cls]);
+    const name = col(headers, ["фио уч", "оқушы", "ученик", "фио", "аты жөні"], 0, [cls, parent]);
+    expect([name, cls, parent]).toEqual([1, 2, 3]);
+    expect(isNumberHeader("№")).toBe(true);
+    expect(isNumberHeader("фио")).toBe(false);
+  });
+});

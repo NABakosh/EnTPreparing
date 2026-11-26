@@ -1,7 +1,7 @@
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/errors";
 import type { CurrentUser } from "@/server/auth/current";
-import { buildXlsx, col, readTable } from "@/server/lib/sheets";
+import { buildXlsx, col, isNumberHeader, readTable } from "@/server/lib/sheets";
 import { teacherClassIds } from "./access";
 import { createAccount, normalizeClassName, type IssuedCredential } from "./users";
 
@@ -21,19 +21,26 @@ export async function credentialsXlsx(creds: IssuedCredential[]) {
 /** Импорт учеников: ФИО, Класс, ФИО родителя. Админ — любые классы (создаются), учитель — только свои. */
 export async function importStudents(actor: CurrentUser, file: File): Promise<ImportResult> {
   if (actor.role !== "ADMIN" && actor.role !== "TEACHER") throw new AppError("forbidden", 403);
-  const { headers, rows } = await readTable(file);
+  const { headers, rows, lines } = await readTable(file);
   if (!rows.length) throw new AppError("empty_file");
   if (rows.length > MAX_ROWS) throw new AppError("too_many_rows");
-  const ci = { name: col(headers, ["фио уч", "фио", "аты-жөні", "аты жөні"], 0), cls: col(headers, ["класс", "сынып"], 1), parent: col(headers, ["родител", "ата-ана", "ата ана"], 2) };
-  // если «ФИО» нашлось в колонке родителя — берём первую колонку
-  if (ci.name === ci.parent) ci.name = 0;
+  const firstData = (skip: number[]) => Math.max(0, headers.findIndex((h, i) => !skip.includes(i) && !isNumberHeader(h)));
+  const cls = col(headers, ["класс", "сынып"], -1);
+  const parent = col(headers, ["родител", "ата ана"], -1, [cls]);
+  const taken = [cls, parent].filter((i) => i >= 0);
+  // «ФИО» ищем вне колонок класса и родителя; иначе — первая колонка, не «№»
+  const ci = {
+    name: col(headers, ["фио уч", "оқушы", "ученик", "фио", "аты жөні"], firstData(taken), taken),
+    cls: cls >= 0 ? cls : 1,
+    parent: parent >= 0 ? parent : 2,
+  };
   const allowed = await teacherClassIds(actor);
   const created: IssuedCredential[] = [];
   const errors: { row: number; code: string }[] = [];
   const classCache = new Map<string, { id: string; name: string }>();
 
   for (const [i, r] of rows.entries()) {
-    const rowNo = i + 2;
+    const rowNo = lines[i];
     const name = (r[ci.name] ?? "").replace(/\s+/g, " ").trim();
     const parentName = (r[ci.parent] ?? "").replace(/\s+/g, " ").trim();
     const norm = normalizeClassName(r[ci.cls] ?? "");
@@ -72,14 +79,14 @@ export async function importStudents(actor: CurrentUser, file: File): Promise<Im
 /** Импорт учителей (только админ): ФИО, Предмет, Класс (можно несколько через запятую). */
 export async function importTeachers(actor: CurrentUser, file: File): Promise<ImportResult> {
   if (actor.role !== "ADMIN") throw new AppError("forbidden", 403);
-  const { headers, rows } = await readTable(file);
+  const { headers, rows, lines } = await readTable(file);
   if (!rows.length) throw new AppError("empty_file");
   if (rows.length > MAX_ROWS) throw new AppError("too_many_rows");
-  const ci = { name: col(headers, ["фио", "аты-жөні", "аты жөні"], 0), subject: col(headers, ["предмет", "пән"], 1), cls: col(headers, ["класс", "сынып"], 2) };
+  const ci = { name: col(headers, ["фио", "аты жөні"], Math.max(0, headers.findIndex((h) => !isNumberHeader(h)))), subject: col(headers, ["предмет", "пән"], 1), cls: col(headers, ["класс", "сынып"], 2) };
   const created: IssuedCredential[] = [];
   const errors: { row: number; code: string }[] = [];
   for (const [i, r] of rows.entries()) {
-    const rowNo = i + 2;
+    const rowNo = lines[i];
     const name = (r[ci.name] ?? "").replace(/\s+/g, " ").trim();
     if (name.length < 3) { errors.push({ row: rowNo, code: "row_no_name" }); continue; }
     const classNames = (r[ci.cls] ?? "").split(/[,;]/).map((s) => s.trim()).filter(Boolean);
