@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope } from "next/font/google";
+import { Inter, Onest } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
@@ -8,7 +8,7 @@ import { BRAND } from "@/config/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "cyrillic", "cyrillic-ext"] });
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin", "cyrillic", "cyrillic-ext"] });
+const onest = Onest({ variable: "--font-onest", subsets: ["latin", "cyrillic", "cyrillic-ext"] });
 
 export const metadata: Metadata = {
   title: { default: `${BRAND} — ҰБТ-ға дайындық / подготовка к ҰБТ`, template: `%s · ${BRAND}` },
@@ -20,7 +20,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   return (
-    <html lang={locale} className={`${inter.variable} ${manrope.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${onest.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="flex min-h-full flex-col bg-background" suppressHydrationWarning>
         <NextIntlClientProvider>
           {children}
