@@ -19,7 +19,7 @@ export default async function LearnPage() {
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {subjects.map((s) => (
           <li key={s.id}>
-            <Link href={`/student/learn/${s.id}`} className="flex h-full flex-col gap-3 rounded-2xl border bg-card p-5 transition hover:border-primary hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+            <Link href={`/student/learn/${s.id}`} className="flex h-full flex-col gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-5 transition hover:border-primary hover:shadow-lg focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
               <div className="flex flex-wrap gap-2">
                 <Badge variant={s.mandatory ? "default" : "secondary"}>{s.mandatory ? t("landing.mandatory") : t("landing.profile")}</Badge>
                 {s.inProgram && !s.mandatory && <Badge variant="outline">{t("student.inProgram")}</Badge>}

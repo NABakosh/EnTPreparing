@@ -20,12 +20,12 @@ export default async function NewsListPage({ searchParams }: PageProps<"/news">)
   const page = Math.max(1, Number(sp.page) || 1);
   const { items, pages } = await publicNewsPage(page);
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-bold">{t("nav.news")}</h1>
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+      <h1 className="text-center text-3xl font-bold sm:text-4xl">{t("nav.news")}</h1>
       {items.length === 0 ? (
         <p className="mt-6 text-muted-foreground">{t("common.noData")}</p>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((n) => (
             <NewsCard key={n.id} news={n} locale={locale} />
           ))}

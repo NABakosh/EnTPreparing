@@ -25,7 +25,7 @@ export default async function AdminNewsPage() {
       ) : (
         <ul className="space-y-3">
           {items.map((n) => (
-            <li key={n.id} className="flex flex-col gap-3 rounded-2xl border bg-card p-4 md:flex-row md:items-center">
+            <li key={n.id} className="flex flex-col gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 md:flex-row md:items-center">
               <div className="min-w-0 flex-1">
                 <Link href={`/admin/news/${n.id}`} className="font-semibold hover:text-primary">{pickText(n, "title", locale)}</Link>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

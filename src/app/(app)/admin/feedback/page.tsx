@@ -22,7 +22,7 @@ export default async function AdminFeedbackPage({ searchParams }: PageProps<"/ad
       ) : (
         <ul className="space-y-3">
           {items.map((f) => (
-            <li key={f.id} className={`rounded-2xl border bg-card p-4 ${f.handled ? "opacity-75" : ""}`}>
+            <li key={f.id} className={`rounded-3xl border border-transparent bg-card shadow-soft p-4 ${f.handled ? "opacity-75" : ""}`}>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold">{f.name}</span>
                 <span className="text-sm text-muted-foreground">{f.contact}</span>

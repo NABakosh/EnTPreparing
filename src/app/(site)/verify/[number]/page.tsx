@@ -21,8 +21,8 @@ export default async function VerifyPage({ params }: PageProps<"/verify/[number]
   const valid = !!c && !c.revoked;
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="text-2xl font-bold">{t("verifyTitle")}</h1>
-      <div className={`mt-6 rounded-3xl border-2 p-6 ${valid ? "border-success/40 bg-success/5" : "border-destructive/40 bg-destructive/5"}`}>
+      <h1 className="text-center text-3xl font-bold">{t("verifyTitle")}</h1>
+      <div className={`mt-8 rounded-[2rem] border-2 bg-card p-6 shadow-soft sm:p-8 ${valid ? "border-success/40" : "border-destructive/40"}`}>
         <p className={`flex items-center gap-2 text-xl font-bold ${valid ? "text-success" : "text-destructive"}`}>
           {valid ? <BadgeCheck className="size-7" aria-hidden /> : <ShieldX className="size-7" aria-hidden />}
           {valid ? t("valid") : t("invalid")}

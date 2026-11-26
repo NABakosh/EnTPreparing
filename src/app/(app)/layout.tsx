@@ -19,8 +19,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">
         {t("common.skipToContent")}
       </a>
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
+      <header className="sticky top-0 z-40 bg-gradient-to-b from-background via-background/85 to-transparent px-3 pt-3 pb-2 sm:px-4 sm:pt-4">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 rounded-full bg-card/95 pr-2 pl-4 shadow-soft backdrop-blur sm:pr-3 sm:pl-6">
           <Logo href={homeFor(user.role)} />
           <div className="ml-auto flex items-center gap-2">
             <div className="hidden text-right text-xs leading-tight sm:block">
@@ -29,19 +29,19 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </div>
             <LocaleSwitcher />
             <form action={logoutAction}>
-              <Button type="submit" variant="ghost" size="icon" aria-label={t("common.logout")} title={t("common.logout")}>
+              <Button type="submit" variant="secondary" size="icon" className="rounded-full" aria-label={t("common.logout")} title={t("common.logout")}>
                 <LogOut aria-hidden />
               </Button>
             </form>
           </div>
         </div>
-        <nav className="lg:hidden" aria-label={t("common.menu")}>
+        <nav className="mx-auto mt-2 max-w-7xl lg:hidden" aria-label={t("common.menu")}>
           <AppNav items={items} variant="top" />
         </nav>
       </header>
       <div className="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 py-6">
-        <nav className="hidden w-60 shrink-0 lg:block" aria-label={t("common.menu")}>
-          <div className="sticky top-22"><AppNav items={items} variant="side" /></div>
+        <nav className="hidden w-64 shrink-0 lg:block" aria-label={t("common.menu")}>
+          <div className="sticky top-26 rounded-3xl bg-card p-3 shadow-soft"><AppNav items={items} variant="side" /></div>
         </nav>
         <main id="main" className="min-w-0 flex-1">
           {user.mustChangePassword && <PasswordPrompt />}

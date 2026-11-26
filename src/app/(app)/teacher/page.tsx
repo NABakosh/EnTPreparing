@@ -18,7 +18,7 @@ export default async function TeacherHome() {
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {classes.map((c) => (
             <li key={c.id}>
-              <Link href={`/teacher/class/${c.id}`} className="flex items-center gap-4 rounded-2xl border bg-card p-5 transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+              <Link href={`/teacher/class/${c.id}`} className="flex items-center gap-4 rounded-3xl border border-transparent bg-card shadow-soft p-5 transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
                 <span className="grid size-14 place-items-center rounded-2xl bg-secondary text-xl font-extrabold text-secondary-foreground">{c.name}</span>
                 <span className="flex-1">
                   <span className="block font-semibold">{t("teacher.classTitle", { name: c.name })}</span>

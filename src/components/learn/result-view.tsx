@@ -18,7 +18,7 @@ export async function ResultView({ result, threshold, actions }: { result: Resul
   const passed = pct >= threshold;
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <section className="rounded-3xl border bg-card p-6 text-center">
+      <section className="rounded-3xl border border-transparent bg-card shadow-soft p-6 text-center">
         <p className="text-sm font-medium text-muted-foreground">{t(`student.kinds.${a.kind}`)} · {a.finishedAt ? fmtDate(a.finishedAt, locale, true) : ""}</p>
         <p className="mt-2 text-5xl font-extrabold text-primary tabular-nums">{a.score}<span className="text-2xl text-muted-foreground"> / {a.maxScore}</span></p>
         <p className="mt-1 text-lg font-semibold">{pct}%</p>
@@ -35,7 +35,7 @@ export async function ResultView({ result, threshold, actions }: { result: Resul
       </section>
 
       {result.sections.length > 1 && (
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-semibold">{t("student.subjectsCol")}</h2>
           <ul className="space-y-3">
             {result.sections.map((s) => (
@@ -51,7 +51,7 @@ export async function ResultView({ result, threshold, actions }: { result: Resul
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{t("student.review")}</h2>
         {result.questions.map((q, i) => (
-          <details key={q.id} className="group rounded-2xl border bg-card" open={!q.isCorrect && result.questions.length <= 20}>
+          <details key={q.id} className="group rounded-3xl border border-transparent bg-card shadow-soft" open={!q.isCorrect && result.questions.length <= 20}>
             <summary className="flex cursor-pointer items-start gap-3 p-4">
               {q.isCorrect ? <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" aria-label={t("student.correct")} /> : <XCircle className="mt-0.5 size-5 shrink-0 text-destructive" aria-label={t("student.wrong")} />}
               <span className="min-w-0 flex-1">

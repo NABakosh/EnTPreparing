@@ -31,7 +31,7 @@ export default async function ClassStatsPage({ params }: PageProps<"/teacher/cla
       <PageHeader title={t("teacher.classTitle", { name: s.cls.name })} description={s.cls.teachers.map((x) => x.fullName).join(", ")} />
       <ul className="grid gap-3 sm:grid-cols-3">
         {tiles.map((x) => (
-          <li key={x.label} className="rounded-2xl border bg-card p-4">
+          <li key={x.label} className="rounded-3xl border border-transparent bg-card shadow-soft p-4">
             <div className="text-sm text-muted-foreground">{x.label}</div>
             <div className="mt-1 text-2xl font-extrabold tabular-nums">{x.value}</div>
           </li>

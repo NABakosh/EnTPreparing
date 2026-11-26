@@ -34,7 +34,7 @@ export default async function AdminQuestionsPage({ searchParams }: PageProps<"/a
           </>
         }
       />
-      <form role="search" className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-[1fr_200px_160px_130px_130px_auto]">
+      <form role="search" className="grid gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:grid-cols-2 lg:grid-cols-[1fr_200px_160px_130px_130px_auto]">
         {f.topicId && <input type="hidden" name="topicId" value={f.topicId} />}
         <label className="sr-only" htmlFor="qf-q">{t("common.search")}</label>
         <Input id="qf-q" name="q" defaultValue={f.q} placeholder={t("questions.searchPlaceholder")} />
@@ -69,7 +69,7 @@ export default async function AdminQuestionsPage({ searchParams }: PageProps<"/a
         <ul className="space-y-3">
           {items.map((q) => (
             <li key={q.id}>
-              <Link href={`/admin/questions/${q.id}`} className="block space-y-2 rounded-2xl border bg-card p-4 hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+              <Link href={`/admin/questions/${q.id}`} className="block space-y-2 rounded-3xl border border-transparent bg-card shadow-soft p-4 hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
                 <QuestionBadges status={q.status} aiGenerated={q.aiGenerated} isDemo={q.isDemo} needsReviewKk={q.needsReviewKk} type={q.type} />
                 <p className="line-clamp-2 font-medium whitespace-pre-line">{pickText(q, "text", locale)}</p>
                 <p className="text-xs text-muted-foreground">{pickText(q.subject, "name", locale)} · {pickText(q.topic, "title", locale)}{q.source ? ` · ${q.source}` : ""}</p>

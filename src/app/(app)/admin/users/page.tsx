@@ -31,7 +31,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
       <Panel title={t("admin.createUser")}>
         <CreateUserForm roles={["STUDENT", "TEACHER", "PARENT", "ADMIN"]} classes={classes.map((c) => ({ id: c.id, name: c.name }))} />
       </Panel>
-      <form className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[1fr_180px_140px_auto]" role="search">
+      <form className="grid gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:grid-cols-[1fr_180px_140px_auto]" role="search">
         <label className="sr-only" htmlFor="u-q">{t("common.search")}</label>
         <Input id="u-q" name="q" defaultValue={q} placeholder={t("admin.searchPlaceholder")} />
         <label className="sr-only" htmlFor="u-role">{t("admin.roleFilter")}</label>
@@ -55,7 +55,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
       ) : (
         <ul className="space-y-3">
           {items.map((u) => (
-            <li key={u.id} className="flex flex-col gap-3 rounded-2xl border bg-card p-4 lg:flex-row lg:items-center">
+            <li key={u.id} className="flex flex-col gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 lg:flex-row lg:items-center">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold">{u.fullName}</span>

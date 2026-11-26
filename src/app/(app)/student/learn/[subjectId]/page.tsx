@@ -22,7 +22,7 @@ export default async function SubjectPage({ params }: PageProps<"/student/learn/
       <PageHeader title={pickText(tree, "name", locale)} />
       <div className="space-y-6">
         {tree.modules.map((m, mi) => (
-          <section key={m.id} className="rounded-2xl border bg-card p-4 sm:p-6" aria-labelledby={`m-${m.id}`}>
+          <section key={m.id} className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6" aria-labelledby={`m-${m.id}`}>
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className="text-sm font-semibold text-primary">{t("student.module", { n: mi + 1 })}</span>
               {m.completed && <Badge className="bg-success text-white">{t("student.moduleDone")}</Badge>}

@@ -28,7 +28,7 @@ export default async function ParentHome() {
           {cards.map(({ child, stats, subjects }) => {
             const last = stats.exams.at(-1);
             return (
-              <li key={child.id} className="rounded-2xl border bg-card p-5">
+              <li key={child.id} className="rounded-3xl border border-transparent bg-card shadow-soft p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold">{child.fullName}</h2>

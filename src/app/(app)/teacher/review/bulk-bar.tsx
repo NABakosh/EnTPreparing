@@ -35,7 +35,7 @@ export function BulkBar() {
       id={BULK_FORM}
       onChange={() => setCount(boxes().filter((b) => b.checked).length)}
       onSubmit={(e) => e.preventDefault()}
-      className="sticky top-[117px] z-20 flex flex-wrap items-center gap-2 rounded-2xl border bg-card/95 p-3 shadow-sm backdrop-blur lg:top-20"
+      className="sticky top-[140px] z-20 flex flex-wrap items-center gap-2 rounded-3xl bg-card/95 p-3 shadow-soft backdrop-blur lg:top-24"
     >
       <Button
         type="button"

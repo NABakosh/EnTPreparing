@@ -20,7 +20,7 @@ export default async function AdminContentPage() {
       <ul className="space-y-3">
         {subjects.map((s) => (
           <li key={s.id}>
-            <Link href={`/admin/content/${s.id}`} className="flex items-center gap-3 rounded-2xl border bg-card p-4 hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+            <Link href={`/admin/content/${s.id}`} className="flex items-center gap-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold">{pickText(s, "name", locale)}</span>

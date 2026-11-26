@@ -22,14 +22,14 @@ export async function StatsView({ stats, resultHref }: { stats: StudentStats; re
     <div className="space-y-6">
       <ul className="grid gap-3 sm:grid-cols-3">
         {tiles.map(({ Icon, label, value }) => (
-          <li key={label} className="rounded-2xl border bg-card p-4">
+          <li key={label} className="rounded-3xl border border-transparent bg-card shadow-soft p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="size-4" aria-hidden />{label}</div>
             <div className="mt-1 text-2xl font-extrabold tabular-nums">{value}</div>
           </li>
         ))}
       </ul>
 
-      <section className="rounded-2xl border bg-card p-4 sm:p-6">
+      <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
         <h2 className="mb-4 text-lg font-semibold">{t("student.examDynamics")}</h2>
         {stats.exams.length ? (
           <>
@@ -45,7 +45,7 @@ export async function StatsView({ stats, resultHref }: { stats: StudentStats; re
       </section>
 
       {stats.subjects.length > 0 && (
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-semibold">{t("student.bySubject")}</h2>
           <PctBars data={stats.subjects.map((s) => ({ name: s.name, pct: s.pct }))} valueLabel={t("student.bySubject")} />
           <table className="sr-only">
@@ -56,7 +56,7 @@ export async function StatsView({ stats, resultHref }: { stats: StudentStats; re
       )}
 
       {stats.weak.length > 0 && (
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <h2 className="mb-3 text-lg font-semibold">{t("student.weakTitle")}</h2>
           <ul className="space-y-3">
             {stats.weak.map((w) => (
@@ -70,7 +70,7 @@ export async function StatsView({ stats, resultHref }: { stats: StudentStats; re
       )}
 
       {stats.topics.length > 0 && (
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <h2 className="mb-3 text-lg font-semibold">{t("student.byTopic")}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -90,7 +90,7 @@ export async function StatsView({ stats, resultHref }: { stats: StudentStats; re
       )}
 
       {stats.recent.length > 0 && (
-        <section className="rounded-2xl border bg-card p-4 sm:p-6">
+        <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <h2 className="mb-3 text-lg font-semibold">{t("student.recentTitle")}</h2>
           <ul className="divide-y">
             {stats.recent.map((r) => {

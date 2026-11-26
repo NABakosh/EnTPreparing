@@ -30,7 +30,7 @@ export function AppNav({ items, variant }: { items: NavItem[]; variant: "side" |
   const t = useTranslations("nav");
   const all = [...items, { href: "/account", label: "account", icon: "user" }];
   return (
-    <ul className={variant === "side" ? "space-y-1" : "flex gap-2 overflow-x-auto px-4 pb-3 [scrollbar-width:none]"}>
+    <ul className={variant === "side" ? "space-y-1" : "flex gap-2 overflow-x-auto px-1 py-1 [scrollbar-width:none]"}>
       {all.map((i) => {
         const Icon = ICONS[i.icon] ?? Home;
         const active = isActive(pathname, i.href, all);
@@ -41,8 +41,12 @@ export function AppNav({ items, variant }: { items: NavItem[]; variant: "side" |
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                variant === "side" ? "rounded-xl px-3 py-2.5 text-sm" : "h-10 rounded-full border px-4 text-sm whitespace-nowrap",
-                active ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                variant === "side" ? "rounded-2xl px-3.5 py-3 text-sm" : "h-10 rounded-full px-4 text-sm whitespace-nowrap shadow-soft",
+                active
+                  ? "btn-glow text-white"
+                  : variant === "side"
+                    ? "text-foreground/75 hover:bg-secondary hover:text-secondary-foreground"
+                    : "bg-card text-foreground/75 hover:text-secondary-foreground",
               )}
             >
               <Icon className="size-4 shrink-0" aria-hidden />

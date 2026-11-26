@@ -37,18 +37,18 @@ export function FeedbackForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="fb-name">{t("landing.feedbackName")}</Label>
-          <Input id="fb-name" name="name" required minLength={2} maxLength={100} autoComplete="name" className="h-11" />
+          <Input id="fb-name" name="name" required minLength={2} maxLength={100} autoComplete="name" className="h-12" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="fb-contact">{t("landing.feedbackContact")}</Label>
-          <Input id="fb-contact" name="contact" required minLength={3} maxLength={150} className="h-11" />
+          <Input id="fb-contact" name="contact" required minLength={3} maxLength={150} className="h-12" />
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="fb-message">{t("landing.feedbackMessage")}</Label>
         <Textarea id="fb-message" name="message" required minLength={5} maxLength={3000} rows={5} />
       </div>
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending} className="btn-glow w-full sm:w-auto sm:px-10">
         {pending ? t("common.loading") : t("landing.feedbackSend")}
       </Button>
       {done && (

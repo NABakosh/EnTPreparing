@@ -20,7 +20,7 @@ export default async function AdminClassesPage() {
       ) : (
         <ul className="space-y-3">
           {classes.map((c) => (
-            <li key={c.id} className="rounded-2xl border bg-card p-4">
+            <li key={c.id} className="rounded-3xl border border-transparent bg-card shadow-soft p-4">
               <details>
                 <summary className="flex cursor-pointer flex-wrap items-center gap-3 rounded-lg">
                   <span className="text-lg font-bold">{c.name}</span>

@@ -5,6 +5,7 @@ import { Panel } from "@/components/app/page-header";
 import { Bar } from "@/components/learn/bar";
 import { ProfilePicker } from "@/components/learn/profile-picker";
 import { Badge } from "@/components/ui/badge";
+import { Swirl } from "@/components/site/decor";
 import { buttonVariants } from "@/components/ui/button";
 import type { Locale } from "@/config/site";
 import { fmtDate } from "@/lib/format";
@@ -35,19 +36,20 @@ export default async function StudentDashboard() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <div className="rounded-3xl bg-primary p-6 text-primary-foreground">
-          <h1 className="text-2xl font-bold sm:text-3xl">{t("student.hello", { name: firstName })}</h1>
-          <p className="mt-2 text-primary-foreground/90">{t("student.dashboardText")}</p>
-          <div className="mt-5 flex flex-wrap gap-2">
+        <div className="bg-brand-gradient relative overflow-hidden rounded-3xl p-6 text-white shadow-soft sm:p-7">
+          <Swirl className="absolute -right-20 -bottom-24 size-80 text-white opacity-15" />
+          <h1 className="relative text-2xl font-bold sm:text-3xl">{t("student.hello", { name: firstName })}</h1>
+          <p className="relative mt-2 text-white/90">{t("student.dashboardText")}</p>
+          <div className="relative mt-5 flex flex-wrap gap-2">
             <Link href="/student/learn" className={buttonVariants({ variant: "secondary", size: "lg" })}>{t("nav.learn")}</Link>
             {exam ? (
               <Link href={`/student/exam/${exam.id}`} className={buttonVariants({ variant: "secondary", size: "lg" })}><PlayCircle aria-hidden /> {t("student.continueExam")}</Link>
             ) : (
-              <Link href="/student/exam" className="inline-flex h-12 items-center rounded-xl border border-white/40 px-6 font-medium hover:bg-white/10">{t("nav.exam")}</Link>
+              <Link href="/student/exam" className="inline-flex h-12 items-center rounded-2xl border border-white/40 px-6 font-semibold hover:bg-white/10">{t("nav.exam")}</Link>
             )}
           </div>
         </div>
-        <div className="rounded-3xl border bg-card p-6">
+        <div className="rounded-3xl border border-transparent bg-card shadow-soft p-6">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><CalendarClock className="size-4" aria-hidden />{t("student.toUbt")}</div>
           <div className="mt-2 text-4xl font-extrabold text-primary tabular-nums">{t("student.daysLeft", { count: days })}</div>
           <div className="mt-1 text-sm text-muted-foreground">{fmtDate(settings.ubtDate, locale)}</div>

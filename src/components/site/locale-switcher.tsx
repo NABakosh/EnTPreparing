@@ -13,7 +13,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
-    <div role="group" aria-label={t("language")} className={cn("inline-flex rounded-full border bg-card p-0.5", className)}>
+    <div role="group" aria-label={t("language")} className={cn("inline-flex rounded-full bg-muted p-1", className)}>
       {LOCALES.map((l) => (
         <button
           key={l}
@@ -28,7 +28,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
             })
           }
           className={cn(
-            "min-w-11 rounded-full px-3 py-1.5 text-sm font-semibold uppercase transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+            "min-w-11 rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
             locale === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >

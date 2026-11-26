@@ -43,11 +43,11 @@ export function LoginForm({ next }: { next?: string }) {
         </label>
       </div>
       {error && (
-        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
+        <p role="alert" className="rounded-xl bg-destructive/10 px-3.5 py-2.5 text-sm font-medium text-destructive">
           {error}
         </p>
       )}
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className="btn-glow h-13 w-full" disabled={pending}>
         {pending ? t("common.loading") : t("auth.submit")}
       </Button>
     </form>

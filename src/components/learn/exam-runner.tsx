@@ -176,7 +176,7 @@ export function ExamRunner({
   return (
     <div className="space-y-4">
       {/* Панель: таймер и сохранение */}
-      <div className="sticky top-[117px] z-30 -mx-4 border-b bg-background/95 px-4 py-2 backdrop-blur lg:top-16">
+      <div className="sticky top-[140px] z-30 rounded-3xl bg-card/95 px-4 py-2.5 shadow-soft backdrop-blur lg:top-24">
         <div className="flex flex-wrap items-center gap-3">
           <div className={cn("flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-lg font-bold tabular-nums", lowTime ? "bg-destructive/10 text-destructive" : "bg-secondary text-secondary-foreground")} role="timer" aria-label={t("exam.timeLeft")}>
             <Timer className="size-5" aria-hidden />
@@ -210,7 +210,7 @@ export function ExamRunner({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <article className="space-y-4 rounded-2xl border bg-card p-4 sm:p-6">
+        <article className="space-y-4 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span className="font-semibold text-foreground">{t("student.question", { n: idx + 1, total: questions.length })}</span>
             <span>· {sectionName}</span>
@@ -234,7 +234,7 @@ export function ExamRunner({
           </div>
         </article>
 
-        <aside className="space-y-3 rounded-2xl border bg-card p-4" aria-label={t("exam.questionsNav")}>
+        <aside className="space-y-3 rounded-3xl border border-transparent bg-card shadow-soft p-4" aria-label={t("exam.questionsNav")}>
           <h2 className="text-sm font-semibold">{t("exam.questionsNav")}</h2>
           <div className="max-h-[50vh] space-y-3 overflow-y-auto lg:max-h-[60vh]">
             {sections.map((s) => (

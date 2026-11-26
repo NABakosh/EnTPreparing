@@ -44,12 +44,12 @@ export default async function TopicPage({ params }: PageProps<"/student/topic/[t
         </aside>
       )}
 
-      <section className="rounded-2xl border bg-card p-4 sm:p-6" aria-label={t("student.theory")}>
+      <section className="rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6" aria-label={t("student.theory")}>
         {theory.text ? <Markdown>{theory.text}</Markdown> : <p className="text-muted-foreground">{t("student.noTheory")}</p>}
         {topic.sourcePages && <p className="mt-4 text-xs text-muted-foreground">{t("student.sources")}: {topic.sourcePages}</p>}
       </section>
 
-      <section className="space-y-3 rounded-2xl border bg-card p-4 sm:p-6">
+      <section className="space-y-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
         <p className="text-sm text-muted-foreground">
           {t("student.threshold", { pct: threshold })}
           {progress && progress.bestPercent > 0 && <> · <span className="font-semibold text-foreground">{t("student.bestResult", { pct: progress.bestPercent })}</span></>}
@@ -60,7 +60,7 @@ export default async function TopicPage({ params }: PageProps<"/student/topic/[t
         </div>
       </section>
 
-      <details className="group rounded-2xl border bg-card">
+      <details className="group rounded-3xl border border-transparent bg-card shadow-soft">
         <summary className="flex cursor-pointer items-center gap-2 p-4 font-semibold sm:p-5"><Bot className="size-5 text-primary" aria-hidden />{t("mentor.widgetTitle")}</summary>
         <div className="border-t p-4 sm:p-5"><MentorChat topicId={topic.id} compact /></div>
       </details>

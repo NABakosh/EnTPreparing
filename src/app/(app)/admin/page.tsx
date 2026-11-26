@@ -22,7 +22,7 @@ export default async function AdminHome() {
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <li key={c.label}>
-            <Link href={c.href} className="block rounded-2xl border bg-card p-5 transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+            <Link href={c.href} className="block rounded-3xl border border-transparent bg-card shadow-soft p-5 transition-shadow hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
               <div className="text-sm text-muted-foreground">{c.label}</div>
               <div className="mt-1 text-3xl font-extrabold tabular-nums">{c.value}</div>
             </Link>

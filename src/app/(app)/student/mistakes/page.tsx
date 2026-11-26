@@ -21,7 +21,7 @@ export default async function MistakesPage() {
       ) : (
         <ul className="space-y-4">
           {items.map((m) => (
-            <li key={m.id} className="space-y-3 rounded-2xl border bg-card p-4 sm:p-5">
+            <li key={m.id} className="space-y-3 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-5">
               <div className="text-xs font-medium text-muted-foreground">
                 {m.subject} · <Link href={`/student/topic/${m.topicId}`} className="text-primary hover:underline">{m.topic}</Link>
               </div>

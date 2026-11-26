@@ -47,7 +47,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/teacher/r
             const opts = q.options as { ru: string; kk: string }[];
             const correct = q.correct as number[];
             return (
-              <li key={q.id} className="space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
+              <li key={q.id} className="space-y-4 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="flex items-center gap-2 text-sm font-medium">
                     <input type="checkbox" name="ids" value={q.id} form={BULK_FORM} className="size-5 accent-primary" />

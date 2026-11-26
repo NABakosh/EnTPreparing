@@ -83,7 +83,7 @@ export function QuizRunner({ attemptId, questions, initialAnswers }: { attemptId
         ))}
       </nav>
 
-      <article className="space-y-4 rounded-2xl border bg-card p-4 sm:p-6">
+      <article className="space-y-4 rounded-3xl border border-transparent bg-card shadow-soft p-4 sm:p-6">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>{t("student.question", { n: idx + 1, total: questions.length })}</span>
           <span>·</span>
